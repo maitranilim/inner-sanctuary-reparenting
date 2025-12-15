@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inner Sanctuary - Reparenting</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1>Inner Sanctuary</h1>
+            <p class="tagline">Reparenting is the act of coming home to yourself.</p>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Hero Section -->
+            <section class="hero">
+                <p class="hero-text">It is not just about changing your mind. It is about healing the relationship between the adult you are today and the child you once were.</p>
+            </section>
+
+            <!-- Comparison Section -->
+            <section class="comparison">
+                <h2>Reframing vs. Reparenting</h2>
+                <p class="intro-text">You asked a beautiful question: Is it about changing thoughts, or reassuring the past self? While Cognitive Reframing (changing thoughts) is a powerful tool, Reparenting is distinct because it is an emotional experience.</p>
+
+                <div class="comparison-container">
+                    <!-- Mind Approach -->
+                    <div class="approach">
+                        <div class="approach-header mind-approach">
+                            <span class="icon">🧠</span>
+                            <h3>The "Mind" Approach</h3>
+                        </div>
+                        <div class="approach-content">
+                            <h4>Cognitive Reframing</h4>
+                            <p class="quote">"I need to change how I think about this past event so it doesn't hurt me anymore."</p>
+                            <ul class="benefits">
+                                <li>✓ Logic-based interpretation</li>
+                                <li>✓ Focuses on the present "Adult" perspective</li>
+                                <li>✓ Goal: Objectivity & Fact-checking</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Heart Approach -->
+                    <div class="approach">
+                        <div class="approach-header heart-approach">
+                            <span class="icon">❤️</span>
+                            <h3>The "Heart" Approach</h3>
+                        </div>
+                        <div class="approach-content">
+                            <h4>Reparenting</h4>
+                            <p class="quote">"I see the child in me who is hurt, and I am here to hold them until they feel safe."</p>
+                            <ul class="benefits">
+                                <li>💫 Feeling-based connection</li>
+                                <li>💫 Focuses on the "Inner Child's" unmet needs</li>
+                                <li>💫 Goal: Safety, Validation & Soothing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="insight-box">
+                    <span class="insight-icon">💡</span>
+                    <p><strong>Insight:</strong> Healing often requires both. You use the "Adult Mind" to create safety so the "Inner Child" can feel it.</p>
+                </div>
+            </section>
+
+            <!-- Practice Dialogue Section -->
+            <section class="practice">
+                <h2>Practice the Dialogue</h2>
+                <p class="intro-text">Reparenting is a skill. It involves replacing the critical inner voice with a nurturing one. Select a feeling below to see how a Wise Parent would respond.</p>
+
+                <div class="feeling-selector">
+                    <label for="feeling-select">I am feeling...</label>
+                    <select id="feeling-select">
+                        <option value="">Choose a feeling...</option>
+                        <option value="unworthy">Unworthy / "Not Good Enough"</option>
+                        <option value="invisible">Invisible / Ignored</option>
+                        <option value="overwhelmed">Overwhelmed / Scared</option>
+                        <option value="guilty">Guilty / "I'm Bad"</option>
+                    </select>
+                </div>
+
+                <div id="dialogue-content" class="dialogue-content hidden">
+                    <div class="dialogue-trigger"></div>
+                    <div class="dialogue-old">
+                        <h4 class="old-voice">❌ The Old Critic</h4>
+                        <p class="old-text"></p>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="dialogue-wise">
+                        <h4 class="wise-voice">✨ The Wise Parent</h4>
+                        <p class="wise-text"></p>
+                    </div>
+
+                    <div class="action-box">
+                        <p class="action-text"></p>
+                    </div>
+
+                    <button class="copy-btn" onclick="copyText()">📋 Copy</button>
+                </div>
+            </section>
+
+            <!-- Four Pillars Section -->
+            <section class="pillars">
+                <h2>The Four Pillars of Reparenting</h2>
+                <div class="pillars-grid">
+                    <div class="pillar" onclick="togglePillar(this)">
+                        <div class="pillar-header">
+                            <span class="pillar-icon">🎯</span>
+                            <h3>Discipline</h3>
+                        </div>
+                        <div class="pillar-content hidden">
+                            <p>Keeping promises to yourself. Not punishment, but protection. Setting boundaries and routines (like sleep or nutrition) that tell your inner child: "I will take care of you."</p>
+                            <a href="#" class="learn-more">Learn more →</a>
+                        </div>
+                    </div>
+
+                    <div class="pillar" onclick="togglePillar(this)">
+                        <div class="pillar-header">
+                            <span class="pillar-icon">🎨</span>
+                            <h3>Joy & Play</h3>
+                        </div>
+                        <div class="pillar-content hidden">
+                            <p>Reclaiming your spark. Doing things simply because they are fun, not productive. Allowing the inner child to explore, create, and be messy without judgment.</p>
+                        </div>
+                    </div>
+
+                    <div class="pillar" onclick="togglePillar(this)">
+                        <div class="pillar-header">
+                            <span class="pillar-icon">🧘</span>
+                            <h3>Emotional Regulation</h3>
+                        </div>
+                        <div class="pillar-content hidden">
+                            <p>Safety in the body. Learning to soothe your nervous system when triggered. Breathing, grounding, and naming emotions instead of suppressing them.</p>
+                        </div>
+                    </div>
+
+                    <div class="pillar" onclick="togglePillar(this)">
+                        <div class="pillar-header">
+                            <span class="pillar-icon">🌸</span>
+                            <h3>Self-Compassion</h3>
+                        </div>
+                        <div class="pillar-content hidden">
+                            <p>The antidote to shame. Speaking to yourself with the kindness you would offer a beloved friend. Validating your pain instead of minimizing it.</p>
+                            <a href="#" class="learn-more">Learn more →</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Daily Ritual Section -->
+            <section class="daily-ritual">
+                <h2>A Simple Daily Ritual</h2>
+                <div class="ritual-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <p>Place your hand on your heart. Close your eyes.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <p>Ask internally: "What do you need right now?"</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <p>Wait for the answer. Then, to the best of your ability, give it to yourself.</p>
+                    </div>
+                </div>
+                <div class="wisdom-quote">
+                    <p>"You are the one you have been waiting for."</p>
+                    <p class="attribution">— Internal Family Systems Wisdom</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
