@@ -56,11 +56,13 @@ function togglePillar(element) {
     document.querySelectorAll('.pillar-content').forEach(item => {
         if (item !== content) {
             item.classList.add('hidden');
+            item.closest('.pillar').setAttribute('aria-expanded', 'false');
         }
     });
     
     // Toggle current pillar
     content.classList.toggle('hidden');
+    element.setAttribute('aria-expanded', String(!content.classList.contains('hidden')));
 }
 
 // Copy text function
@@ -69,7 +71,7 @@ function copyText() {
     const actionText = document.querySelector('.action-text').textContent;
     const textToCopy = wiseText + '\n\n' + actionText;
     
-    navigator.clipboard.writeText(textToCopy).then(() => {
+    const showCopied = () => {
         // Show success message
         const btn = document.querySelector('.copy-btn');
         const originalText = btn.textContent;
@@ -78,9 +80,15 @@ function copyText() {
         setTimeout(() => {
             btn.textContent = originalText;
         }, 2000);
-    }).catch(err => {
-        alert('Failed to copy text');
-    });
+    };
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(textToCopy).then(showCopied).catch(() => {
+            alert('Could not copy automatically. Please select the text and copy it manually.');
+        });
+    } else {
+        alert('Copy is not available in this browser. Please select the text and copy it manually.');
+    }
 }
 
 // Add scroll animations
@@ -126,9 +134,108 @@ document.querySelectorAll('.pillar').forEach(pillar => {
     pillar.addEventListener('mouseenter', function() {
         this.style.transition = 'all 0.3s ease';
     });
+    pillar.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            togglePillar(pillar);
+        }
+    });
 });
 
 // Initialize on page load
 window.addEventListener('load', function() {
     console.log('Inner Sanctuary - Reparenting website loaded successfully');
+});
+
+// Remember the user's preferred visual mode without sending data anywhere.
+const themeToggle = document.getElementById('theme-toggle');
+const savedTheme = localStorage.getItem('inner-sanctuary-theme');
+if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+function updateThemeLabel() {
+    const dark = document.body.classList.contains('dark-mode');
+    themeToggle.textContent = dark ? '☀️' : '🌙';
+    themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+}
+updateThemeLabel();
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('inner-sanctuary-theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    updateThemeLabel();
+});
+
+// Daily check-in: intentionally local-only and limited to a small history.
+const noteInput = document.getElementById('check-in-note');
+const characterCount = document.getElementById('character-count');
+const saveStatus = document.getElementById('save-status');
+let history = [];
+try {
+    const savedHistory = JSON.parse(localStorage.getItem('inner-sanctuary-check-ins') || '[]');
+    if (Array.isArray(savedHistory)) history = savedHistory;
+} catch (error) {
+    localStorage.removeItem('inner-sanctuary-check-ins');
+}
+function renderHistory() {
+    const historyElement = document.getElementById('check-in-history');
+    if (!history.length) {
+        historyElement.textContent = 'Your saved reflections will appear here.';
+        return;
+    }
+    historyElement.textContent = `${history.length} reflection${history.length === 1 ? '' : 's'} saved in this browser.`;
+}
+noteInput.addEventListener('input', () => {
+    characterCount.textContent = `${noteInput.value.length} / 500`;
+});
+document.getElementById('save-check-in').addEventListener('click', () => {
+    const note = noteInput.value.trim();
+    if (!note) {
+        saveStatus.textContent = 'Write a few words first, if you would like to save them.';
+        return;
+    }
+    history.unshift({ date: new Date().toLocaleDateString(), note });
+    history.splice(5);
+    localStorage.setItem('inner-sanctuary-check-ins', JSON.stringify(history));
+    saveStatus.textContent = 'Saved gently, just on this device.';
+    noteInput.value = '';
+    characterCount.textContent = '0 / 500';
+    renderHistory();
+});
+renderHistory();
+
+document.querySelectorAll('[data-need]').forEach(button => {
+    button.addEventListener('click', () => {
+        document.querySelectorAll('[data-need]').forEach(item => item.classList.remove('selected'));
+        button.classList.add('selected');
+        document.getElementById('selected-need').textContent = `You might be needing: ${button.dataset.need}.`;
+    });
+});
+
+// A self-contained breathing timer that stops automatically after one minute.
+const breathingToggle = document.getElementById('breathing-toggle');
+const breathingCircle = document.getElementById('breathing-circle');
+const breathingInstruction = document.getElementById('breathing-instruction');
+let breathingTimer;
+let breathingInterval;
+breathingToggle.addEventListener('click', () => {
+    if (breathingTimer) {
+        clearTimeout(breathingTimer);
+        clearInterval(breathingInterval);
+        breathingTimer = null;
+        breathingCircle.classList.remove('active');
+        breathingCircle.textContent = 'Ready';
+        breathingInstruction.textContent = 'When you\'re ready, begin with a slow inhale.';
+        breathingToggle.textContent = 'Start 60-second pause';
+        return;
+    }
+    let elapsed = 0;
+    breathingCircle.classList.add('active');
+    breathingToggle.textContent = 'Stop pause';
+    const update = () => {
+        elapsed += 1;
+        const breathingIn = elapsed % 2 === 1;
+        breathingCircle.textContent = breathingIn ? 'Breathe in' : 'Breathe out';
+        breathingInstruction.textContent = breathingIn ? 'Slowly welcome the breath in.' : 'Let the breath leave without forcing it.';
+    };
+    update();
+    breathingInterval = setInterval(update, 4000);
+    breathingTimer = setTimeout(() => breathingToggle.click(), 60000);
 });

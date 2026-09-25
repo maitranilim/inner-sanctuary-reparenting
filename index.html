@@ -13,6 +13,12 @@
     <div class="container">
         <!-- Header Section -->
         <header class="header">
+            <nav class="site-nav" aria-label="Main navigation">
+                <a href="#check-in">Check in</a>
+                <a href="#practice">Practice</a>
+                <a href="#ritual">Ritual</a>
+                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode">🌙</button>
+            </nav>
             <h1>Inner Sanctuary</h1>
             <p class="tagline">Reparenting is the act of coming home to yourself.</p>
         </header>
@@ -73,6 +79,7 @@
 
             <!-- Practice Dialogue Section -->
             <section class="practice">
+                <span id="practice" class="anchor-target"></span>
                 <h2>Practice the Dialogue</h2>
                 <p class="intro-text">Reparenting is a skill. It involves replacing the critical inner voice with a nurturing one. Select a feeling below to see how a Wise Parent would respond.</p>
 
@@ -113,7 +120,7 @@
             <section class="pillars">
                 <h2>The Four Pillars of Reparenting</h2>
                 <div class="pillars-grid">
-                    <div class="pillar" onclick="togglePillar(this)">
+                    <div class="pillar" role="button" tabindex="0" aria-expanded="false" onclick="togglePillar(this)">
                         <div class="pillar-header">
                             <span class="pillar-icon">🎯</span>
                             <h3>Discipline</h3>
@@ -124,7 +131,7 @@
                         </div>
                     </div>
 
-                    <div class="pillar" onclick="togglePillar(this)">
+                    <div class="pillar" role="button" tabindex="0" aria-expanded="false" onclick="togglePillar(this)">
                         <div class="pillar-header">
                             <span class="pillar-icon">🎨</span>
                             <h3>Joy & Play</h3>
@@ -134,7 +141,7 @@
                         </div>
                     </div>
 
-                    <div class="pillar" onclick="togglePillar(this)">
+                    <div class="pillar" role="button" tabindex="0" aria-expanded="false" onclick="togglePillar(this)">
                         <div class="pillar-header">
                             <span class="pillar-icon">🧘</span>
                             <h3>Emotional Regulation</h3>
@@ -144,7 +151,7 @@
                         </div>
                     </div>
 
-                    <div class="pillar" onclick="togglePillar(this)">
+                    <div class="pillar" role="button" tabindex="0" aria-expanded="false" onclick="togglePillar(this)">
                         <div class="pillar-header">
                             <span class="pillar-icon">🌸</span>
                             <h3>Self-Compassion</h3>
@@ -157,8 +164,43 @@
                 </div>
             </section>
 
+            <section id="check-in" class="check-in">
+                <h2>Today's gentle check-in</h2>
+                <p class="intro-text">A few honest words can help you notice what you need. Your note stays in this browser and is never sent anywhere.</p>
+                <div class="check-in-grid">
+                    <div>
+                        <label for="check-in-note">What is present for you today?</label>
+                        <textarea id="check-in-note" rows="5" maxlength="500" placeholder="I notice..."></textarea>
+                        <div class="field-footer"><span id="character-count">0 / 500</span><button id="save-check-in" class="primary-btn" type="button">Save check-in</button></div>
+                        <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
+                    </div>
+                    <div class="needs-card">
+                        <h3>What might you need?</h3>
+                        <div class="need-list" role="group" aria-label="Choose a need">
+                            <button type="button" data-need="Rest">🛌 Rest</button>
+                            <button type="button" data-need="Comfort">🤍 Comfort</button>
+                            <button type="button" data-need="Space">🌿 Space</button>
+                            <button type="button" data-need="Connection">💬 Connection</button>
+                        </div>
+                        <p id="selected-need">Choose one, if it feels useful.</p>
+                    </div>
+                </div>
+                <div id="check-in-history" class="check-in-history" aria-live="polite"></div>
+            </section>
+
+            <section class="grounding">
+                <h2>A minute to arrive</h2>
+                <p class="intro-text">Follow the circle for a short breathing pause. There is nothing to achieve here.</p>
+                <div class="breathing-exercise">
+                    <div id="breathing-circle" class="breathing-circle" aria-live="polite">Ready</div>
+                    <p id="breathing-instruction">When you're ready, begin with a slow inhale.</p>
+                    <button id="breathing-toggle" class="primary-btn" type="button">Start 60-second pause</button>
+                </div>
+            </section>
+
             <!-- Daily Ritual Section -->
-            <section class="daily-ritual">
+            <section id="ritual" class="daily-ritual">
+                <span class="anchor-target"></span>
                 <h2>A Simple Daily Ritual</h2>
                 <div class="ritual-steps">
                     <div class="step">
