@@ -1,241 +1,243 @@
-// Dialogue data for different feelings
-const dialogueData = {
-    unworthy: {
-        trigger: 'Triggered by criticism or failure',
-        old: "This is too much. You can't handle this. You're going to fail.",
-        wise: "It makes sense that this feels big right now. We don't have to do it all at once. I am right here with you, one step at a time.",
-        action: "Wrap yourself in a blanket or hug yourself tight."
-    },
-    invisible: {
-        trigger: 'Triggered by being spoken over',
-        old: "No one sees you. You don't matter. Your voice doesn't count.",
-        wise: "Your voice matters, and I hear you. Even if others don't see you right now, I do. Let's speak your truth together.",
-        action: "Write down what you wanted to say. Your words are valid."
-    },
-    overwhelmed: {
-        trigger: 'Triggered by chaos or new tasks',
-        old: "You're drowning. This is too much. You should give up.",
-        wise: "I see that you're scared right now. That's okay. We can break this down into tiny, manageable pieces. You're stronger than you think.",
-        action: "Take 5 deep breaths. Ground yourself by naming 5 things you can see."
-    },
-    guilty: {
-        trigger: 'Triggered by setting a boundary',
-        old: "You're selfish. You're hurting others. You don't deserve to rest.",
-        wise: "Setting a boundary is an act of self-love, not selfishness. You are allowed to protect your peace. This is strength, not cruelty.",
-        action: "Place your hand on your heart and repeat: I deserve to take care of myself."
-    }
-};
+import {
+  HISTORY_KEY,
+  MAX_CHECK_IN_LENGTH,
+  MAX_HISTORY_ITEMS,
+  THEME_KEY,
+  formatCheckInDate,
+  getDialogue,
+  normalizeCheckIns,
+  prependCheckIn,
+} from './app-core.mjs';
 
-// Handle feeling selection
-document.getElementById('feeling-select').addEventListener('change', function(e) {
-    const selectedFeeling = e.target.value;
-    const dialogueContent = document.getElementById('dialogue-content');
-    
-    if (selectedFeeling && dialogueData[selectedFeeling]) {
-        const data = dialogueData[selectedFeeling];
-        
-        // Update dialogue content
-        document.querySelector('.dialogue-trigger').textContent = data.trigger;
-        document.querySelector('.old-text').textContent = data.old;
-        document.querySelector('.wise-text').textContent = data.wise;
-        document.querySelector('.action-text').textContent = '\ud83c\udf1f Action: ' + data.action;
-        
-        // Show dialogue content
-        dialogueContent.classList.remove('hidden');
-    } else {
-        // Hide dialogue content if no feeling is selected
-        dialogueContent.classList.add('hidden');
-    }
-});
+const byId = (id) => document.getElementById(id);
+const feelingSelect = byId('feeling-select');
+const dialogue = byId('dialogue-content');
+const copyButton = document.querySelector('.copy-btn');
+const copyStatus = byId('copy-status');
 
-// Toggle pillar content
-function togglePillar(element) {
-    const content = element.querySelector('.pillar-content');
-    
-    // Close all other pillars
-    document.querySelectorAll('.pillar-content').forEach(item => {
-        if (item !== content) {
-            item.classList.add('hidden');
-            item.closest('.pillar').setAttribute('aria-expanded', 'false');
-        }
-    });
-    
-    // Toggle current pillar
-    content.classList.toggle('hidden');
-    element.setAttribute('aria-expanded', String(!content.classList.contains('hidden')));
+function readStorage(key) {
+  try {
+    return { available: true, value: localStorage.getItem(key) };
+  } catch {
+    return { available: false, value: null };
+  }
 }
 
-// Copy text function
-function copyText() {
-    const wiseText = document.querySelector('.wise-text').textContent;
-    const actionText = document.querySelector('.action-text').textContent;
-    const textToCopy = wiseText + '\n\n' + actionText;
-    
-    const showCopied = () => {
-        // Show success message
-        const btn = document.querySelector('.copy-btn');
-        const originalText = btn.textContent;
-        btn.textContent = '✓ Copied!';
-        
-        setTimeout(() => {
-            btn.textContent = originalText;
-        }, 2000);
-    };
-
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(textToCopy).then(showCopied).catch(() => {
-            alert('Could not copy automatically. Please select the text and copy it manually.');
-        });
-    } else {
-        alert('Copy is not available in this browser. Please select the text and copy it manually.');
-    }
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-// Add scroll animations
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
-};
-
-const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-            observer.unobserve(entry.target);
-        }
-    });
-}, observerOptions);
-
-// Observe all sections
-document.querySelectorAll('section').forEach(section => {
-    section.style.opacity = '0';
-    section.style.transform = 'translateY(20px)';
-    section.style.transition = 'all 0.6s ease';
-    observer.observe(section);
-});
-
-// Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// Add hover effects to interactive elements
-document.querySelectorAll('.pillar').forEach(pillar => {
-    pillar.addEventListener('mouseenter', function() {
-        this.style.transition = 'all 0.3s ease';
-    });
-    pillar.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            togglePillar(pillar);
-        }
-    });
-});
-
-// Initialize on page load
-window.addEventListener('load', function() {
-    console.log('Inner Sanctuary - Reparenting website loaded successfully');
-});
-
-// Remember the user's preferred visual mode without sending data anywhere.
-const themeToggle = document.getElementById('theme-toggle');
-const savedTheme = localStorage.getItem('inner-sanctuary-theme');
-if (savedTheme === 'dark') document.body.classList.add('dark-mode');
-function updateThemeLabel() {
-    const dark = document.body.classList.contains('dark-mode');
-    themeToggle.textContent = dark ? '☀️' : '🌙';
-    themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+function renderDialogue(feeling) {
+  const response = getDialogue(feeling);
+  if (!response) {
+    dialogue.hidden = true;
+    copyButton.disabled = true;
+    return;
+  }
+  dialogue.querySelector('.dialogue-trigger').textContent = response.trigger;
+  dialogue.querySelector('.old-text').textContent = response.old;
+  dialogue.querySelector('.wise-text').textContent = response.wise;
+  dialogue.querySelector('.action-text').textContent = `One small thing: ${response.action}`;
+  dialogue.hidden = false;
+  copyButton.disabled = false;
+  copyStatus.textContent = '';
 }
-updateThemeLabel();
-themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('inner-sanctuary-theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    updateThemeLabel();
+
+feelingSelect.addEventListener('change', () => renderDialogue(feelingSelect.value));
+
+copyButton.addEventListener('click', async () => {
+  const response = `${dialogue.querySelector('.wise-text').textContent}\n\n${dialogue.querySelector('.action-text').textContent}`;
+  if (!navigator.clipboard?.writeText) {
+    copyStatus.textContent = 'Copy is not available here. You can select the response text to copy it.';
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(response);
+    copyStatus.textContent = 'Response copied.';
+    copyButton.textContent = 'Copied';
+    window.setTimeout(() => { copyButton.textContent = 'Copy response'; }, 1800);
+  } catch {
+    copyStatus.textContent = 'The browser could not copy this response. You can select the text and copy it manually.';
+  }
 });
 
-// Daily check-in: intentionally local-only and limited to a small history.
-const noteInput = document.getElementById('check-in-note');
-const characterCount = document.getElementById('character-count');
-const saveStatus = document.getElementById('save-status');
+const themeButton = byId('theme-toggle');
+const themeStored = readStorage(THEME_KEY);
+const initialTheme = themeStored.value === 'dark'
+  ? 'dark'
+  : themeStored.value === 'light'
+    ? 'light'
+    : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+function setTheme(theme, persist = true) {
+  const isDark = theme === 'dark';
+  document.body.classList.toggle('dark-mode', isDark);
+  themeButton.setAttribute('aria-pressed', String(isDark));
+  themeButton.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  themeButton.querySelector('span').textContent = isDark ? '☀' : '☾';
+  if (persist) writeStorage(THEME_KEY, theme);
+}
+
+setTheme(initialTheme, false);
+themeButton.addEventListener('click', () => {
+  setTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
+});
+
+const navToggle = byId('nav-toggle');
+const navLinks = byId('site-navigation');
+function closeNavigation(restoreFocus = false) {
+  navLinks.classList.remove('open');
+  navToggle.setAttribute('aria-expanded', 'false');
+  navToggle.querySelector('.visually-hidden').textContent = 'Open navigation';
+  if (restoreFocus) navToggle.focus();
+}
+navToggle.addEventListener('click', () => {
+  const isOpen = navLinks.classList.toggle('open');
+  navToggle.setAttribute('aria-expanded', String(isOpen));
+  navToggle.querySelector('.visually-hidden').textContent = isOpen ? 'Close navigation' : 'Open navigation';
+});
+navLinks.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => closeNavigation()));
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && navLinks.classList.contains('open')) closeNavigation(true);
+});
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.site-nav')) closeNavigation();
+});
+
+const noteInput = byId('check-in-note');
+const characterCount = byId('character-count');
+const saveStatus = byId('save-status');
+const historyList = byId('check-in-history');
+const historyEmpty = byId('history-empty');
+const clearHistoryButton = byId('clear-check-ins');
+const historyStored = readStorage(HISTORY_KEY);
 let history = [];
+let persistenceAvailable = historyStored.available;
 try {
-    const savedHistory = JSON.parse(localStorage.getItem('inner-sanctuary-check-ins') || '[]');
-    if (Array.isArray(savedHistory)) history = savedHistory;
-} catch (error) {
-    localStorage.removeItem('inner-sanctuary-check-ins');
+  history = normalizeCheckIns(JSON.parse(historyStored.value || '[]'));
+} catch {
+  history = [];
+  try { localStorage.removeItem(HISTORY_KEY); } catch { persistenceAvailable = false; }
 }
+
+function persistHistory() {
+  if (!writeStorage(HISTORY_KEY, JSON.stringify(history))) {
+    persistenceAvailable = false;
+    return false;
+  }
+  persistenceAvailable = true;
+  return true;
+}
+
 function renderHistory() {
-    const historyElement = document.getElementById('check-in-history');
-    if (!history.length) {
-        historyElement.textContent = 'Your saved reflections will appear here.';
-        return;
-    }
-    historyElement.textContent = `${history.length} reflection${history.length === 1 ? '' : 's'} saved in this browser.`;
+  historyList.replaceChildren();
+  historyEmpty.hidden = history.length > 0;
+  clearHistoryButton.hidden = history.length === 0;
+  history.forEach((entry, index) => {
+    const item = document.createElement('li');
+    item.className = 'saved-note';
+    const date = document.createElement('time');
+    date.textContent = formatCheckInDate(entry.date);
+    if (!Number.isNaN(new Date(entry.date).getTime())) date.dateTime = new Date(entry.date).toISOString();
+    const note = document.createElement('p');
+    note.textContent = entry.note;
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = 'Remove this note';
+    remove.setAttribute('aria-label', `Remove reflection from ${date.textContent}`);
+    remove.addEventListener('click', () => {
+      history.splice(index, 1);
+      persistHistory();
+      renderHistory();
+      saveStatus.textContent = persistenceAvailable ? 'Note removed from this browser.' : 'Note removed for this visit.';
+    });
+    item.append(date, note, remove);
+    historyList.append(item);
+  });
 }
+
 noteInput.addEventListener('input', () => {
-    characterCount.textContent = `${noteInput.value.length} / 500`;
+  characterCount.textContent = `${noteInput.value.length} / ${MAX_CHECK_IN_LENGTH}`;
 });
-document.getElementById('save-check-in').addEventListener('click', () => {
-    const note = noteInput.value.trim();
-    if (!note) {
-        saveStatus.textContent = 'Write a few words first, if you would like to save them.';
-        return;
-    }
-    history.unshift({ date: new Date().toLocaleDateString(), note });
-    history.splice(5);
-    localStorage.setItem('inner-sanctuary-check-ins', JSON.stringify(history));
-    saveStatus.textContent = 'Saved gently, just on this device.';
-    noteInput.value = '';
-    characterCount.textContent = '0 / 500';
-    renderHistory();
+
+byId('save-check-in').addEventListener('click', () => {
+  if (!noteInput.value.trim()) {
+    saveStatus.textContent = 'Write a few words first, if you would like to save them.';
+    noteInput.focus();
+    return;
+  }
+  history = prependCheckIn(history, noteInput.value, new Date().toISOString());
+  const stored = persistHistory();
+  noteInput.value = '';
+  characterCount.textContent = `0 / ${MAX_CHECK_IN_LENGTH}`;
+  renderHistory();
+  saveStatus.textContent = stored
+    ? `Saved on this device. Up to ${MAX_HISTORY_ITEMS} notes are kept here.`
+    : 'Saved for this visit only; browser storage is unavailable.';
 });
+
+clearHistoryButton.addEventListener('click', () => {
+  if (!window.confirm('Clear all saved reflections from this browser?')) return;
+  history = [];
+  persistHistory();
+  renderHistory();
+  saveStatus.textContent = 'Saved reflections cleared.';
+});
+
+document.querySelectorAll('[data-need]').forEach((button) => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('[data-need]').forEach((item) => item.setAttribute('aria-pressed', 'false'));
+    button.setAttribute('aria-pressed', 'true');
+    byId('selected-need').textContent = `You might be needing: ${button.dataset.need}.`;
+  });
+});
+
 renderHistory();
 
-document.querySelectorAll('[data-need]').forEach(button => {
-    button.addEventListener('click', () => {
-        document.querySelectorAll('[data-need]').forEach(item => item.classList.remove('selected'));
-        button.classList.add('selected');
-        document.getElementById('selected-need').textContent = `You might be needing: ${button.dataset.need}.`;
-    });
+const breathingToggle = byId('breathing-toggle');
+const breathingCircle = byId('breathing-circle');
+const breathingInstruction = byId('breathing-instruction');
+let breathingTimer = null;
+let breathingInterval = null;
+let breathingPhase = 0;
+
+function stopBreathing(message = 'When you’re ready, begin with a slow inhale.') {
+  if (breathingTimer !== null) window.clearTimeout(breathingTimer);
+  if (breathingInterval !== null) window.clearInterval(breathingInterval);
+  breathingTimer = null;
+  breathingInterval = null;
+  breathingCircle.classList.remove('active');
+  breathingCircle.textContent = 'Ready';
+  breathingInstruction.textContent = message;
+  breathingToggle.textContent = 'Begin a breathing pause';
+  breathingToggle.setAttribute('aria-pressed', 'false');
+}
+
+function updateBreathingCue() {
+  const breathingIn = breathingPhase % 2 === 0;
+  breathingCircle.textContent = breathingIn ? 'Breathe in' : 'Breathe out';
+  breathingInstruction.textContent = breathingIn ? 'Slowly welcome the breath in.' : 'Let the breath leave without forcing it.';
+  breathingPhase += 1;
+}
+
+breathingToggle.addEventListener('click', () => {
+  if (breathingTimer !== null) {
+    stopBreathing();
+    return;
+  }
+  breathingPhase = 0;
+  breathingCircle.classList.add('active');
+  breathingToggle.textContent = 'Stop breathing pause';
+  breathingToggle.setAttribute('aria-pressed', 'true');
+  updateBreathingCue();
+  breathingInterval = window.setInterval(updateBreathingCue, 4000);
+  breathingTimer = window.setTimeout(() => stopBreathing('Pause complete. Take a moment before continuing.'), 60000);
 });
 
-// A self-contained breathing timer that stops automatically after one minute.
-const breathingToggle = document.getElementById('breathing-toggle');
-const breathingCircle = document.getElementById('breathing-circle');
-const breathingInstruction = document.getElementById('breathing-instruction');
-let breathingTimer;
-let breathingInterval;
-breathingToggle.addEventListener('click', () => {
-    if (breathingTimer) {
-        clearTimeout(breathingTimer);
-        clearInterval(breathingInterval);
-        breathingTimer = null;
-        breathingCircle.classList.remove('active');
-        breathingCircle.textContent = 'Ready';
-        breathingInstruction.textContent = 'When you\'re ready, begin with a slow inhale.';
-        breathingToggle.textContent = 'Start 60-second pause';
-        return;
-    }
-    let elapsed = 0;
-    breathingCircle.classList.add('active');
-    breathingToggle.textContent = 'Stop pause';
-    const update = () => {
-        elapsed += 1;
-        const breathingIn = elapsed % 2 === 1;
-        breathingCircle.textContent = breathingIn ? 'Breathe in' : 'Breathe out';
-        breathingInstruction.textContent = breathingIn ? 'Slowly welcome the breath in.' : 'Let the breath leave without forcing it.';
-    };
-    update();
-    breathingInterval = setInterval(update, 4000);
-    breathingTimer = setTimeout(() => breathingToggle.click(), 60000);
-});
+window.addEventListener('pagehide', () => stopBreathing('When you’re ready, begin with a slow inhale.'), { once: true });
+

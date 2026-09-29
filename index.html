@@ -1,229 +1,137 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-adsense-account" content="ca-pub-4315629123147124">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4315629123147124"
-     crossorigin="anonymous"></script>
-    <title>Inner Sanctuary - Reparenting</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f2ea">
+  <meta name="description" content="A gentle, private space to practice responding to yourself with care.">
+  <title>Inner Sanctuary — A practice in coming home</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="script.js"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header Section -->
-        <header class="header">
-            <nav class="site-nav" aria-label="Main navigation">
-                <a href="#check-in">Check in</a>
-                <a href="#practice">Practice</a>
-                <a href="#ritual">Ritual</a>
-                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode">🌙</button>
-            </nav>
-            <h1>Inner Sanctuary</h1>
-            <p class="tagline">Reparenting is the act of coming home to yourself.</p>
-        </header>
+  <a class="skip-link" href="#main">Skip to the practice</a>
+  <header class="site-header">
+    <a class="wordmark" href="#top" aria-label="Inner Sanctuary home"><span class="wordmark-icon" aria-hidden="true">✳</span> Inner Sanctuary</a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-controls="site-navigation" aria-expanded="false"><span class="visually-hidden">Open navigation</span><span aria-hidden="true">☰</span></button>
+      <div class="nav-links" id="site-navigation">
+      <a href="#practice">Practice</a>
+      <a href="#pillars">Four pillars</a>
+      <a href="#check-in">Check-in</a>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false"><span aria-hidden="true">☾</span></button>
+    </nav>
+  </header>
 
-        <!-- Main Content -->
-        <main>
-            <!-- Hero Section -->
-            <section class="hero">
-                <p class="hero-text">It is not just about changing your mind. It is about healing the relationship between the adult you are today and the child you once were.</p>
-            </section>
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-mark" aria-hidden="true">✦</span> A GENTLER WAY BACK TO YOURSELF</p>
+        <h1 id="hero-title">You can meet<br>yourself <em>with care.</em></h1>
+        <p class="hero-summary">A quiet space to hear the old voice, answer it kindly, and choose one small thing that might help right now.</p>
+        <a class="button button-dark" href="#practice">Begin with a feeling <span aria-hidden="true">↓</span></a>
+        <p class="privacy-note"><span aria-hidden="true">◌</span> Your reflections stay in this browser.</p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="sun-disc"></div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="figure figure-adult"><span></span></div><div class="figure figure-child"><span></span></div>
+        <div class="art-caption"><span>THE ADULT YOU ARE</span><i></i><span>THE CHILD YOU WERE</span></div>
+      </div>
+      <span class="hero-index" aria-hidden="true">01 / 04</span>
+    </section>
 
-            <!-- Comparison Section -->
-            <section class="comparison">
-                <h2>Reframing vs. Reparenting</h2>
-                <p class="intro-text">You asked a beautiful question: Is it about changing thoughts, or reassuring the past self? While Cognitive Reframing (changing thoughts) is a powerful tool, Reparenting is distinct because it is an emotional experience.</p>
+    <section class="intro-section content-width" aria-labelledby="intro-title">
+      <div class="section-index">A LITTLE CONTEXT <span>01</span></div>
+      <div class="intro-grid">
+        <h2 id="intro-title">Understanding can help.<br><em>So can staying close.</em></h2>
+        <div class="intro-copy">
+          <p>Reframing asks, “Is there another way to see this?” Reparenting adds, “What did I need then, and how can I offer some of that now?”</p>
+          <p>There is room for both. You do not need the perfect words or a big breakthrough. Start with what feels manageable.</p>
+        </div>
+      </div>
+      <div class="approach-cards">
+        <article class="approach-card mind-card"><span class="card-icon" aria-hidden="true">◒</span><p class="card-kicker">THE ADULT MIND</p><h3>Make space for a new view.</h3><p>Notice the story. Check what you know. Let more than one thing be true.</p></article>
+        <article class="approach-card heart-card"><span class="card-icon" aria-hidden="true">♡</span><p class="card-kicker">THE INNER CHILD</p><h3>Offer the care that was missing.</h3><p>Listen for the feeling underneath. Respond with steadiness, warmth and protection.</p></article>
+        <div class="both-note"><span aria-hidden="true">✳</span><p><strong>One can make room for the other.</strong><br>Insight matters. Feeling supported matters too.</p></div>
+      </div>
+    </section>
 
-                <div class="comparison-container">
-                    <!-- Mind Approach -->
-                    <div class="approach">
-                        <div class="approach-header mind-approach">
-                            <span class="icon">🧠</span>
-                            <h3>The "Mind" Approach</h3>
-                        </div>
-                        <div class="approach-content">
-                            <h4>Cognitive Reframing</h4>
-                            <p class="quote">"I need to change how I think about this past event so it doesn't hurt me anymore."</p>
-                            <ul class="benefits">
-                                <li>✓ Logic-based interpretation</li>
-                                <li>✓ Focuses on the present "Adult" perspective</li>
-                                <li>✓ Goal: Objectivity & Fact-checking</li>
-                            </ul>
-                        </div>
-                    </div>
+    <section id="practice" class="practice-section" aria-labelledby="practice-title">
+      <div class="content-width">
+        <div class="section-index">A SMALL PRACTICE <span>02</span></div>
+        <div class="section-heading"><div><p class="eyebrow">PAUSE · NOTICE · RESPOND</p><h2 id="practice-title">What’s here for you?</h2></div><p>Choose a feeling to see a possible response. Keep what fits; leave the rest.</p></div>
+        <div class="practice-panel">
+          <div class="feeling-picker">
+            <label for="feeling-select"><span class="picker-number">01</span> I’m feeling…</label>
+            <select id="feeling-select">
+              <option value="">Choose a feeling</option>
+              <option value="unworthy">Not good enough</option>
+              <option value="invisible">Invisible or ignored</option>
+              <option value="overwhelmed">Overwhelmed or scared</option>
+              <option value="guilty">Guilty for having a boundary</option>
+            </select>
+            <p class="picker-hint">There is no wrong place to begin.</p>
+          </div>
+          <div id="dialogue-content" class="dialogue-content" hidden aria-live="polite" aria-atomic="true">
+            <p class="dialogue-trigger"></p>
+            <div class="voice-card old-card"><span class="voice-label"><span aria-hidden="true">◌</span> THE OLD VOICE</span><p class="old-text"></p></div>
+            <div class="response-connector" aria-hidden="true"><span></span> A kinder answer <span></span></div>
+            <div class="voice-card wise-card"><span class="voice-label"><span aria-hidden="true">✳</span> A STEADIER VOICE</span><p class="wise-text"></p></div>
+            <div class="action-row"><span class="action-spark" aria-hidden="true">✦</span><p class="action-text"></p><button class="copy-btn" type="button" disabled>Copy response</button></div>
+            <p id="copy-status" class="visually-hidden" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-                    <!-- Heart Approach -->
-                    <div class="approach">
-                        <div class="approach-header heart-approach">
-                            <span class="icon">❤️</span>
-                            <h3>The "Heart" Approach</h3>
-                        </div>
-                        <div class="approach-content">
-                            <h4>Reparenting</h4>
-                            <p class="quote">"I see the child in me who is hurt, and I am here to hold them until they feel safe."</p>
-                            <ul class="benefits">
-                                <li>💫 Feeling-based connection</li>
-                                <li>💫 Focuses on the "Inner Child's" unmet needs</li>
-                                <li>💫 Goal: Safety, Validation & Soothing</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+    <section id="pillars" class="pillars-section content-width" aria-labelledby="pillars-title">
+      <div class="section-index">FOUR WAYS TO CARE <span>03</span></div>
+      <div class="section-heading"><div><p class="eyebrow">A PRACTICE, NOT A TEST</p><h2 id="pillars-title">Small acts add up.</h2></div><p>Explore one pillar at a time. You can come back whenever you need.</p></div>
+      <div class="pillars-grid">
+        <article class="pillar-card"><span class="pillar-number">01</span><span class="pillar-symbol" aria-hidden="true">⌂</span><h3>Steady care</h3><p>Keep a small promise to yourself. Routine can be a way of saying, “I’ll be here.”</p></article>
+        <article class="pillar-card"><span class="pillar-number">02</span><span class="pillar-symbol" aria-hidden="true">✿</span><h3>Room for play</h3><p>Make time for something enjoyable, messy or curious without needing it to be useful.</p></article>
+        <article class="pillar-card"><span class="pillar-number">03</span><span class="pillar-symbol" aria-hidden="true">≈</span><h3>Emotional steadiness</h3><p>Name what is happening. Find one thing your body can rest against, even for a moment.</p></article>
+        <article class="pillar-card"><span class="pillar-number">04</span><span class="pillar-symbol" aria-hidden="true">♡</span><h3>Self-compassion</h3><p>Try speaking to yourself as you would to someone you love who is having a hard day.</p></article>
+      </div>
+    </section>
 
-                <div class="insight-box">
-                    <span class="insight-icon">💡</span>
-                    <p><strong>Insight:</strong> Healing often requires both. You use the "Adult Mind" to create safety so the "Inner Child" can feel it.</p>
-                </div>
-            </section>
+    <section class="pause-section" aria-labelledby="pause-title">
+      <div class="pause-orbit" aria-hidden="true"><span></span></div>
+      <div class="pause-copy"><p class="eyebrow">A MINUTE TO ARRIVE</p><h2 id="pause-title">Let the next breath be enough.</h2><p>Follow a soft breathing cue, or simply sit with the words. You can stop whenever you want.</p><div class="breathing-controls"><button id="breathing-toggle" class="button button-light" type="button" aria-pressed="false">Begin a breathing pause</button><p id="breathing-instruction" role="status" aria-live="polite">When you’re ready, begin with a slow inhale.</p></div></div>
+      <div id="breathing-circle" class="breathing-circle" aria-live="off">Ready</div>
+    </section>
 
-            <!-- Practice Dialogue Section -->
-            <section class="practice">
-                <span id="practice" class="anchor-target"></span>
-                <h2>Practice the Dialogue</h2>
-                <p class="intro-text">Reparenting is a skill. It involves replacing the critical inner voice with a nurturing one. Select a feeling below to see how a Wise Parent would respond.</p>
+    <section id="ritual" class="ritual-section content-width" aria-labelledby="ritual-title">
+      <div class="section-index">A GENTLE ROUTINE <span>04</span></div>
+      <div class="section-heading"><div><p class="eyebrow">RETURN TO WHAT YOU NEED</p><h2 id="ritual-title">A ritual you can return to.</h2></div><p>There is no perfect way to do this. Let it be short, ordinary and yours.</p></div>
+      <div class="ritual-steps">
+        <article class="ritual-step"><span>01</span><h3>Arrive</h3><p>Place a hand on your heart, or notice the surface holding you.</p></article>
+        <article class="ritual-step"><span>02</span><h3>Listen</h3><p>Ask softly: “What do I need right now?” Give yourself a moment for an answer.</p></article>
+        <article class="ritual-step"><span>03</span><h3>Respond</h3><p>Choose one small way to meet that need. It does not have to fix everything.</p></article>
+      </div>
+      <blockquote class="ritual-quote"><p>“You are the one you have been waiting for.”</p><cite>— A reminder from Internal Family Systems</cite></blockquote>
+    </section>
 
-                <div class="feeling-selector">
-                    <label for="feeling-select">I am feeling...</label>
-                    <select id="feeling-select">
-                        <option value="">Choose a feeling...</option>
-                        <option value="unworthy">Unworthy / "Not Good Enough"</option>
-                        <option value="invisible">Invisible / Ignored</option>
-                        <option value="overwhelmed">Overwhelmed / Scared</option>
-                        <option value="guilty">Guilty / "I'm Bad"</option>
-                    </select>
-                </div>
+    <section id="check-in" class="checkin-section content-width" aria-labelledby="checkin-title">
+      <div class="section-index">A NOTE TO YOURSELF <span>05</span></div>
+      <div class="checkin-grid">
+        <div class="checkin-intro"><p class="eyebrow">NO NEED TO SOLVE IT</p><h2 id="checkin-title">What’s present<br><em>today?</em></h2><p>A few honest words can help you notice what you need. This note is optional and saved only in this browser.</p><div class="privacy-card"><span aria-hidden="true">◌</span><p><strong>Private by design</strong><br>Nothing you write here is sent to an account or shared with anyone. Clear saved notes at any time.</p></div></div>
+        <div class="checkin-form">
+          <label for="check-in-note">Write a little, or leave it blank.</label>
+          <textarea id="check-in-note" rows="5" maxlength="500" placeholder="I notice…" aria-describedby="character-count"></textarea>
+          <div class="field-footer"><span id="character-count">0 / 500</span><button id="save-check-in" class="button button-dark" type="button">Save this note</button></div>
+          <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
+          <fieldset class="needs-picker"><legend>If it feels useful, what might you need?</legend><div class="need-list"><button type="button" data-need="Rest" aria-pressed="false">Rest</button><button type="button" data-need="Comfort" aria-pressed="false">Comfort</button><button type="button" data-need="Space" aria-pressed="false">Space</button><button type="button" data-need="Connection" aria-pressed="false">Connection</button></div><p id="selected-need" aria-live="polite">Choose one, or skip this.</p></fieldset>
+          <div class="saved-notes"><div class="saved-heading"><h3>Saved in this browser</h3><button id="clear-check-ins" class="text-button" type="button" hidden>Clear notes</button></div><ul id="check-in-history" aria-label="Saved reflections"></ul><p id="history-empty">Your notes will appear here after you save one.</p></div>
+        </div>
+      </div>
+    </section>
 
-                <div id="dialogue-content" class="dialogue-content hidden">
-                    <div class="dialogue-trigger"></div>
-                    <div class="dialogue-old">
-                        <h4 class="old-voice">❌ The Old Critic</h4>
-                        <p class="old-text"></p>
-                    </div>
+    <section class="closing-note" aria-label="A closing thought"><span aria-hidden="true">✳</span><p>You are allowed to begin again, gently.</p><a href="#top">Back to the beginning ↑</a></section>
+  </main>
 
-                    <div class="arrow-down">↓</div>
-
-                    <div class="dialogue-wise">
-                        <h4 class="wise-voice">✨ The Wise Parent</h4>
-                        <p class="wise-text"></p>
-                    </div>
-
-                    <div class="action-box">
-                        <p class="action-text"></p>
-                    </div>
-
-                    <button class="copy-btn" onclick="copyText()">📋 Copy</button>
-                </div>
-            </section>
-
-            <!-- Four Pillars Section -->
-            <section class="pillars">
-                <h2>The Four Pillars of Reparenting</h2>
-                <div class="pillars-grid">
-                    <div class="pillar" role="button" tabindex="0" aria-expanded="false" onclick="togglePillar(this)">
-                        <div class="pillar-header">
-                            <span class="pillar-icon">🎯</span>
-                            <h3>Discipline</h3>
-                        </div>
-                        <div class="pillar-content hidden">
-                            <p>Keeping promises to yourself. Not punishment, but protection. Setting boundaries and routines (like sleep or nutrition) that tell your inner child: "I will take care of you."</p>
-                            <a href="#" class="learn-more">Learn more →</a>
-                        </div>
-                    </div>
-
-                    <div class="pillar" role="button" tabindex="0" aria-expanded="false" onclick="togglePillar(this)">
-                        <div class="pillar-header">
-                            <span class="pillar-icon">🎨</span>
-                            <h3>Joy & Play</h3>
-                        </div>
-                        <div class="pillar-content hidden">
-                            <p>Reclaiming your spark. Doing things simply because they are fun, not productive. Allowing the inner child to explore, create, and be messy without judgment.</p>
-                        </div>
-                    </div>
-
-                    <div class="pillar" role="button" tabindex="0" aria-expanded="false" onclick="togglePillar(this)">
-                        <div class="pillar-header">
-                            <span class="pillar-icon">🧘</span>
-                            <h3>Emotional Regulation</h3>
-                        </div>
-                        <div class="pillar-content hidden">
-                            <p>Safety in the body. Learning to soothe your nervous system when triggered. Breathing, grounding, and naming emotions instead of suppressing them.</p>
-                        </div>
-                    </div>
-
-                    <div class="pillar" role="button" tabindex="0" aria-expanded="false" onclick="togglePillar(this)">
-                        <div class="pillar-header">
-                            <span class="pillar-icon">🌸</span>
-                            <h3>Self-Compassion</h3>
-                        </div>
-                        <div class="pillar-content hidden">
-                            <p>The antidote to shame. Speaking to yourself with the kindness you would offer a beloved friend. Validating your pain instead of minimizing it.</p>
-                            <a href="#" class="learn-more">Learn more →</a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="check-in" class="check-in">
-                <h2>Today's gentle check-in</h2>
-                <p class="intro-text">A few honest words can help you notice what you need. Your note stays in this browser and is never sent anywhere.</p>
-                <div class="check-in-grid">
-                    <div>
-                        <label for="check-in-note">What is present for you today?</label>
-                        <textarea id="check-in-note" rows="5" maxlength="500" placeholder="I notice..."></textarea>
-                        <div class="field-footer"><span id="character-count">0 / 500</span><button id="save-check-in" class="primary-btn" type="button">Save check-in</button></div>
-                        <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
-                    </div>
-                    <div class="needs-card">
-                        <h3>What might you need?</h3>
-                        <div class="need-list" role="group" aria-label="Choose a need">
-                            <button type="button" data-need="Rest">🛌 Rest</button>
-                            <button type="button" data-need="Comfort">🤍 Comfort</button>
-                            <button type="button" data-need="Space">🌿 Space</button>
-                            <button type="button" data-need="Connection">💬 Connection</button>
-                        </div>
-                        <p id="selected-need">Choose one, if it feels useful.</p>
-                    </div>
-                </div>
-                <div id="check-in-history" class="check-in-history" aria-live="polite"></div>
-            </section>
-
-            <section class="grounding">
-                <h2>A minute to arrive</h2>
-                <p class="intro-text">Follow the circle for a short breathing pause. There is nothing to achieve here.</p>
-                <div class="breathing-exercise">
-                    <div id="breathing-circle" class="breathing-circle" aria-live="polite">Ready</div>
-                    <p id="breathing-instruction">When you're ready, begin with a slow inhale.</p>
-                    <button id="breathing-toggle" class="primary-btn" type="button">Start 60-second pause</button>
-                </div>
-            </section>
-
-            <!-- Daily Ritual Section -->
-            <section id="ritual" class="daily-ritual">
-                <span class="anchor-target"></span>
-                <h2>A Simple Daily Ritual</h2>
-                <div class="ritual-steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <p>Place your hand on your heart. Close your eyes.</p>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <p>Ask internally: "What do you need right now?"</p>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <p>Wait for the answer. Then, to the best of your ability, give it to yourself.</p>
-                    </div>
-                </div>
-                <div class="wisdom-quote">
-                    <p>"You are the one you have been waiting for."</p>
-                    <p class="attribution">— Internal Family Systems Wisdom</p>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script src="script.js"></script>
+  <footer class="site-footer"><a class="wordmark" href="#top"><span class="wordmark-icon" aria-hidden="true">✳</span> Inner Sanctuary</a><p>A personal reflection tool, not therapy or a clinical resource.</p><p>Made with care · Your check-ins stay on this device</p></footer>
 </body>
 </html>
+
