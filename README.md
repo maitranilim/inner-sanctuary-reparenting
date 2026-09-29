@@ -1,19 +1,35 @@
 # Inner Sanctuary
 
-I built this as a small, interactive space for practicing reparenting: noticing a harsh inner voice, answering it with more care, and choosing one grounding action.
+Inner Sanctuary is a small, interactive space for practicing reparenting: noticing a harsh inner voice, answering it with more care, and choosing one grounding action. The page keeps the practice optional and user-led. It is a personal reflection tool, not therapy or a clinical resource.
 
-Pick a feeling and the page shows three things: the old thought, a kinder response, and something you can do in the moment. You can also open the four pillars and copy a response to keep.
+## The experience
 
-This is a personal reflection tool, not therapy or a clinical resource. The responses are written into the site; it does not diagnose, personalize advice, or store what you select.
+- **A guided dialogue:** choose one of four feelings to see a possible old thought, a steadier response, and one small action.
+- **Four care practices:** brief prompts for steady care, play, emotional steadiness, and self-compassion.
+- **A returning ritual:** three short steps to pause, listen for a need, and choose a response.
+- **A one-minute breathing pause:** animated inhale/exhale cues with a clear stop control. The pause is optional and ends early whenever the visitor chooses.
+- **A local check-in:** write an optional note, choose a need, and keep up to five notes in this browser. Notes are not sent to an account or server. Remove one note or clear all notes at any time. If browser storage is unavailable, a note is held only for the current visit.
+- **Light and dark appearance:** follows the device preference until changed, then remembers the choice on this device when browser storage is available.
 
-## Try it locally
+The page does not ask for an account, make third-party requests, diagnose or personalize advice. Reflection text is rendered as text and stays in browser storage only. The page uses system fonts so the layout remains self-contained and works offline.
 
-Open `index.html` in a browser. The project is plain HTML, CSS, and JavaScript, with no build step or account.
+## Run locally
 
-## What I worked on
+Use Node.js 20 or newer and pnpm 11.25.0.
 
-- A dialogue flow for feeling unworthy, invisible, overwhelmed, or guilty
-- Expandable sections on discipline, play, emotional regulation, and self-compassion
-- Scroll reveals, responsive layout, and copy-to-clipboard
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
+```
 
-The code is in `index.html`, `style.css`, and `script.js`. The next useful improvement is a proper keyboard and reduced-motion pass before I treat this as a polished accessibility example.
+Then open [http://127.0.0.1:4173](http://127.0.0.1:4173). The site is plain HTML, CSS and JavaScript modules; Vercel can serve the files as a static site without a build step.
+
+## Checks
+
+```sh
+pnpm run check
+pnpm test
+```
+
+The browser tests use Playwright Chromium and run offline against a local static server. GitHub Actions installs Chromium, checks JavaScript syntax, and runs the unit and browser suites on pull requests and pushes to `main`.
+
