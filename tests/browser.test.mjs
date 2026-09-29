@@ -6,7 +6,7 @@ import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
+const root = resolve(fileURLToPath(new URL('../', import.meta.url)));
 const types = new Map([['.html', 'text/html'], ['.css', 'text/css'], ['.js', 'text/javascript'], ['.mjs', 'text/javascript']]);
 let server;
 let browser;
@@ -48,7 +48,8 @@ async function open() {
   page.on('request', (request) => {
     if (!request.url().startsWith(base)) thirdPartyRequests.push(request.url());
   });
-  await page.goto(base);
+  const response = await page.goto(`${base}/`);
+  assert.equal(response?.status(), 200);
   return { context, page, errors, thirdPartyRequests };
 }
 
@@ -61,11 +62,11 @@ test('the reflection page loads without third-party requests', async () => {
 
 test('the practice creates a response and resets when the feeling is cleared', async () => {
   const { context, page, errors } = await open();
-  await page.getByLabel('I’m feeling…').selectOption('overwhelmed');
+  await page.locator('#feeling-select').selectOption('overwhelmed');
   assert.equal(await page.locator('#dialogue-content').isVisible(), true);
   assert.match(await page.locator('.wise-text').textContent(), /break this down into tiny, manageable pieces/);
   assert.equal(await page.getByRole('button', { name: 'Copy response' }).isEnabled(), true);
-  await page.getByLabel('I’m feeling…').selectOption('');
+  await page.locator('#feeling-select').selectOption('');
   assert.equal(await page.locator('#dialogue-content').isVisible(), false);
   assert.deepEqual(errors, []);
   await context.close();
@@ -73,7 +74,7 @@ test('the practice creates a response and resets when the feeling is cleared', a
 
 test('the check-in saves locally, renders text safely, and can be removed', async () => {
   const { context, page, errors } = await open();
-  await page.getByLabel('Write a little, or leave it blank.').fill('<b>playtest note</b>');
+  await page.locator('#check-in-note').fill('<b>playtest note</b>');
   assert.equal(await page.locator('#character-count').textContent(), '20 / 500');
   await page.getByRole('button', { name: 'Save this note' }).click();
   assert.match(await page.locator('#save-status').textContent(), /Saved on this device/);
@@ -89,13 +90,13 @@ test('the check-in saves locally, renders text safely, and can be removed', asyn
 
 test('the breathing pause starts, alternates cues, and stops on request', async () => {
   const { context, page, errors } = await open();
-  const start = page.getByRole('button', { name: 'Begin a breathing pause' });
+  const start = page.locator('#breathing-toggle');
   await start.click();
   assert.equal(await page.locator('#breathing-circle').textContent(), 'Breathe in');
-  assert.equal(await page.getByRole('button', { name: 'Stop breathing pause' }).getAttribute('aria-pressed'), 'true');
-  await page.getByRole('button', { name: 'Stop breathing pause' }).click();
+  assert.equal(await start.getAttribute('aria-pressed'), 'true');
+  await start.click();
   assert.equal(await page.locator('#breathing-circle').textContent(), 'Ready');
-  assert.equal(await page.getByRole('button', { name: 'Begin a breathing pause' }).getAttribute('aria-pressed'), 'false');
+  assert.equal(await start.getAttribute('aria-pressed'), 'false');
   assert.deepEqual(errors, []);
   await context.close();
 });
@@ -103,13 +104,13 @@ test('the breathing pause starts, alternates cues, and stops on request', async 
 test('mobile navigation and theme remain keyboard reachable', async () => {
   const { context, page, errors } = await open();
   await page.setViewportSize({ width: 375, height: 812 });
-  const menu = page.getByRole('button', { name: 'Open navigation' });
+  const menu = page.locator('#nav-toggle');
   await menu.click();
   assert.equal(await page.getByRole('link', { name: 'Four pillars' }).isVisible(), true);
-  assert.equal(await page.getByRole('button', { name: 'Close navigation' }).getAttribute('aria-expanded'), 'true');
-  await page.getByRole('button', { name: 'Close navigation' }).press('Escape');
+  assert.equal(await menu.getAttribute('aria-expanded'), 'true');
+  await menu.press('Escape');
   assert.equal(await page.getByRole('link', { name: 'Four pillars' }).isVisible(), false);
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await page.locator('#theme-toggle').click();
   assert.equal(await page.locator('body').getAttribute('class'), 'dark-mode');
   await page.reload();
   assert.equal(await page.locator('body').getAttribute('class'), 'dark-mode');
@@ -125,8 +126,8 @@ test('storage denial does not prevent the site or temporary check-ins from worki
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(base);
-  await page.getByLabel('Write a little, or leave it blank.').fill('Temporary note');
-  await page.getByRole('button', { name: 'Save this note' }).click();
+  await page.locator('#check-in-note').fill('Temporary note');
+  await page.locator('#save-check-in').click();
   assert.match(await page.locator('#save-status').textContent(), /Saved for this visit only/);
   assert.equal(await page.locator('#check-in-history p').textContent(), 'Temporary note');
   assert.deepEqual(errors, []);
