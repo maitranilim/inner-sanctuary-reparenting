@@ -68,7 +68,9 @@ export function initSavedDrawer({ store, getNotes, onOpen }) {
   const backdrop = byId('saved-backdrop');
   const openers = [...document.querySelectorAll('[data-open-saved]')];
   const feelingList = byId('saved-feelings');
-  const plantList = byId('saved-plants');
+  const plantSummary = byId('saved-plants-summary');
+  const plantClear = byId('saved-plants-clear');
+  const feelingSummary = byId('saved-feelings-summary');
   const noteList = byId('saved-notes');
   const count = byId('saved-count');
   const status = byId('saved-status');
@@ -78,7 +80,6 @@ export function initSavedDrawer({ store, getNotes, onOpen }) {
   function render() {
     const data = store.get();
     feelingList.replaceChildren();
-    plantList.replaceChildren();
     noteList.replaceChildren();
     if (!data.feelings.length) feelingList.append(emptyItem('Feelings you save from the practice will appear here.'));
     data.feelings.forEach((entry) => {
@@ -98,20 +99,9 @@ export function initSavedDrawer({ store, getNotes, onOpen }) {
       item.append(meta, trigger, wise, action, removeButton('Remove saved feeling', () => store.remove('feeling', entry.id)));
       feelingList.append(item);
     });
-    if (!data.plants.length) plantList.append(emptyItem('Plant something you are grateful for and it will be kept here.'));
-    data.plants.forEach((plant) => {
-      const item = document.createElement('li');
-      item.className = 'saved-card saved-plant';
-      const symbol = document.createElement('span');
-      symbol.className = 'saved-symbol';
-      symbol.setAttribute('aria-hidden', 'true');
-      symbol.textContent = plant.symbol;
-      const label = document.createElement('span');
-      label.className = 'saved-plant-name';
-      label.textContent = plant.word || 'A quiet flower';
-      item.append(symbol, label, removeButton(`Remove ${plant.word || 'flower'} from your garden`, () => store.remove('plant', plant.id)));
-      plantList.append(item);
-    });
+    plantSummary.textContent = `Planted ${data.plants.length} ${data.plants.length === 1 ? 'flower' : 'flowers'}`;
+    plantClear.hidden = data.plants.length === 0;
+    feelingSummary.textContent = `Saved feelings (${data.feelings.length})`;
     const notes = getNotes();
     if (!notes.length) noteList.append(emptyItem('Notes you save in the check-in will appear here.'));
     notes.forEach((entry) => {
@@ -166,6 +156,7 @@ export function initSavedDrawer({ store, getNotes, onOpen }) {
   openers.forEach((button) => button.addEventListener('click', () => (drawer.hidden ? open(button) : close())));
   byId('saved-close').addEventListener('click', () => close());
   backdrop.addEventListener('click', () => close());
+  plantClear.addEventListener('click', () => store.clear('plants'));
   byId('saved-clear').addEventListener('click', () => {
     if (!window.confirm('Clear all saved feelings and garden plants from this browser?')) return;
     store.clear('all');

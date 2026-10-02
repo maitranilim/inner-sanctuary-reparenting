@@ -276,8 +276,21 @@
   <aside id="saved-drawer" class="saved-drawer" role="dialog" aria-modal="true" aria-labelledby="saved-title" hidden>
     <div class="drawer-head"><h2 id="saved-title">Saved feelings</h2><button id="saved-close" class="drawer-close" type="button" aria-label="Close saved feelings"><span aria-hidden="true">✕</span></button></div>
     <div class="drawer-body">
-      <section aria-labelledby="saved-feelings-title"><h3 id="saved-feelings-title">Feelings</h3><ul id="saved-feelings" class="saved-list"></ul></section>
-      <section aria-labelledby="saved-plants-title"><h3 id="saved-plants-title">Gratitude garden</h3><ul id="saved-plants" class="saved-list"></ul></section>
+      <section aria-labelledby="saved-feelings-title">
+        <h3 id="saved-feelings-title">Feelings</h3>
+        <details id="saved-feelings-menu" class="saved-menu">
+          <summary><span id="saved-feelings-summary">Saved feelings (0)</span><span class="saved-menu-caret" aria-hidden="true">⌄</span></summary>
+          <ul id="saved-feelings" class="saved-list"></ul>
+        </details>
+      </section>
+      <section aria-labelledby="saved-plants-title">
+        <h3 id="saved-plants-title">Gratitude garden</h3>
+        <div class="saved-card saved-plant">
+          <span class="saved-symbol" aria-hidden="true">✿</span>
+          <span id="saved-plants-summary" class="saved-plant-name">Planted 0 flowers</span>
+          <button id="saved-plants-clear" class="text-button" type="button" hidden>Clear garden</button>
+        </div>
+      </section>
       <section aria-labelledby="saved-notes-title"><h3 id="saved-notes-title">Check-in notes</h3><ul id="saved-notes" class="saved-list"></ul></section>
       <p id="saved-status" class="save-status" role="status" aria-live="polite"></p>
     </div>

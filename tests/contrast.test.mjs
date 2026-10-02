@@ -195,6 +195,7 @@ for (const name of Object.keys(themes)) {
       await page.locator('#menu-toggle').click();
       await page.locator('[data-open-saved]').click();
       await page.locator('#saved-drawer').waitFor({ state: 'visible' });
+      await page.locator('#saved-feelings-menu summary').click();
       await run('drawer');
       await context.close();
       assert.deepEqual(failures, []);
