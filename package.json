@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node dev-server.mjs",
-    "check": "node --check script.js && node --check app-core.mjs && node --check dev-server.mjs",
+    "check": "node --check script.js && node --check app-core.mjs && node --check breathing.mjs && node --check games.mjs && node --check ambient.mjs && node --check dev-server.mjs",
     "test": "node --test tests/*.test.mjs"
   },
   "devDependencies": {

@@ -8,6 +8,9 @@ import {
   normalizeCheckIns,
   prependCheckIn,
 } from './app-core.mjs';
+import { getMoodSuggestion, initBreathing } from './breathing.mjs';
+import { initGames } from './games.mjs';
+import { initAmbient } from './ambient.mjs';
 
 const byId = (id) => document.getElementById(id);
 const feelingSelect = byId('feeling-select');
@@ -199,45 +202,27 @@ document.querySelectorAll('[data-need]').forEach((button) => {
 
 renderHistory();
 
-const breathingToggle = byId('breathing-toggle');
-const breathingCircle = byId('breathing-circle');
-const breathingInstruction = byId('breathing-instruction');
-let breathingTimer = null;
-let breathingInterval = null;
-let breathingPhase = 0;
+const breathing = initBreathing();
+initGames();
+initAmbient();
 
-function stopBreathing(message = 'When you’re ready, begin with a slow inhale.') {
-  if (breathingTimer !== null) window.clearTimeout(breathingTimer);
-  if (breathingInterval !== null) window.clearInterval(breathingInterval);
-  breathingTimer = null;
-  breathingInterval = null;
-  breathingCircle.classList.remove('active');
-  breathingCircle.textContent = 'Ready';
-  breathingInstruction.textContent = message;
-  breathingToggle.textContent = 'Begin a breathing pause';
-  breathingToggle.setAttribute('aria-pressed', 'false');
-}
-
-function updateBreathingCue() {
-  const breathingIn = breathingPhase % 2 === 0;
-  breathingCircle.textContent = breathingIn ? 'Breathe in' : 'Breathe out';
-  breathingInstruction.textContent = breathingIn ? 'Slowly welcome the breath in.' : 'Let the breath leave without forcing it.';
-  breathingPhase += 1;
-}
-
-breathingToggle.addEventListener('click', () => {
-  if (breathingTimer !== null) {
-    stopBreathing();
-    return;
-  }
-  breathingPhase = 0;
-  breathingCircle.classList.add('active');
-  breathingToggle.textContent = 'Stop breathing pause';
-  breathingToggle.setAttribute('aria-pressed', 'true');
-  updateBreathingCue();
-  breathingInterval = window.setInterval(updateBreathingCue, 4000);
-  breathingTimer = window.setTimeout(() => stopBreathing('Pause complete. Take a moment before continuing.'), 60000);
+const moodButtons = [...document.querySelectorAll('[data-mood]')];
+const moodBox = byId('mood-suggestion');
+const moodText = byId('mood-text');
+const moodGo = byId('mood-go');
+let moodPattern = null;
+moodButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const suggestion = getMoodSuggestion(button.dataset.mood);
+    if (!suggestion) return;
+    moodButtons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+    moodText.textContent = suggestion.text;
+    moodGo.textContent = suggestion.cta;
+    moodGo.setAttribute('href', suggestion.href);
+    moodPattern = suggestion.pattern || null;
+    moodBox.hidden = false;
+  });
 });
-
-window.addEventListener('pagehide', () => stopBreathing('When you’re ready, begin with a slow inhale.'), { once: true });
-
+moodGo.addEventListener('click', () => {
+  if (moodPattern) breathing.select(moodPattern);
+});

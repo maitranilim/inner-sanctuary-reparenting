@@ -22,8 +22,9 @@ before(async () => {
       return;
     }
     try {
+      const body = await readFile(file);
       response.writeHead(200, { 'Content-Type': types.get(extname(file)) || 'application/octet-stream' });
-      response.end(await readFile(file));
+      response.end(body);
     } catch {
       response.writeHead(404).end();
     }
@@ -88,12 +89,16 @@ test('the check-in saves locally, renders text safely, and can be removed', asyn
   await context.close();
 });
 
-test('the breathing pause starts, alternates cues, and stops on request', async () => {
+test('breathing starts, follows the chosen technique, and stops on request', async () => {
   const { context, page, errors } = await open();
   const start = page.locator('#breathing-toggle');
   await start.click();
   assert.equal(await page.locator('#breathing-circle').textContent(), 'Breathe in');
   assert.equal(await start.getAttribute('aria-pressed'), 'true');
+  await page.locator('[data-pattern="box"]').click();
+  assert.equal(await page.locator('[data-pattern="box"]').getAttribute('aria-pressed'), 'true');
+  assert.match(await page.locator('#pattern-description').textContent(), /each for 4/);
+  assert.equal(await page.locator('#breathing-circle').textContent(), 'Breathe in');
   await start.click();
   assert.equal(await page.locator('#breathing-circle').textContent(), 'Ready');
   assert.equal(await start.getAttribute('aria-pressed'), 'false');
@@ -101,15 +106,64 @@ test('the breathing pause starts, alternates cues, and stops on request', async 
   await context.close();
 });
 
+test('the mood check-in suggests a technique and selects it', async () => {
+  const { context, page, errors } = await open();
+  assert.equal(await page.locator('#mood-suggestion').isVisible(), false);
+  await page.locator('[data-mood="overwhelmed"]').click();
+  assert.equal(await page.locator('#mood-suggestion').isVisible(), true);
+  await page.locator('#mood-go').click();
+  assert.equal(await page.locator('[data-pattern="sigh"]').getAttribute('aria-pressed'), 'true');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('the games respond and can be switched', async () => {
+  const { context, page, errors } = await open();
+  await page.locator('#bubble-field').scrollIntoViewIfNeeded();
+  await page.locator('#bubble-field .bubble').first().waitFor();
+  await page.locator('#bubble-field .bubble').first().click({ force: true });
+  assert.notEqual((await page.locator('#bubble-message').textContent()).trim(), 'Take your time.');
+  await page.locator('[data-game="garden"]').click();
+  await page.locator('#garden-word').fill('morning light');
+  await page.locator('#garden-plant').click();
+  assert.equal(await page.locator('#garden-field .flower').count(), 1);
+  assert.equal(await page.locator('#garden-field .flower-label').textContent(), 'morning light');
+  await page.locator('#garden-clear').click();
+  assert.equal(await page.locator('#garden-field .flower').count(), 0);
+  await page.locator('[data-game="pond"]').click();
+  assert.equal(await page.locator('#pond-canvas').isVisible(), true);
+  await page.locator('#pond-canvas').press('Enter');
+  await page.locator('[data-game="mandala"]').click();
+  assert.equal(await page.locator('#mandala-canvas').isVisible(), true);
+  await page.locator('#mandala-canvas').press('Enter');
+  assert.equal(await page.locator('#bubble-field').isVisible(), false);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('the page has no page numbers and no tiny text', async () => {
+  const { context, page } = await open();
+  const body = await page.locator('body').innerText();
+  assert.doesNotMatch(body, /\b0[1-5] \/ 0[1-5]\b/);
+  const small = await page.evaluate(() => [...document.querySelectorAll('body *')]
+    .filter((element) => element.childNodes.length && [...element.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim()))
+    .filter((element) => getComputedStyle(element).display !== 'none' && element.getClientRects().length)
+    .filter((element) => parseFloat(getComputedStyle(element).fontSize) < 13)
+    .map((element) => `${element.tagName}.${element.className}`));
+  assert.deepEqual(small, []);
+  await context.close();
+});
+
 test('mobile navigation and theme remain keyboard reachable', async () => {
   const { context, page, errors } = await open();
   await page.setViewportSize({ width: 375, height: 812 });
   const menu = page.locator('#nav-toggle');
+  const pillars = page.getByRole('link', { name: 'Four pillars' });
   await menu.click();
-  assert.equal(await page.getByRole('link', { name: 'Four pillars' }).isVisible(), true);
+  await pillars.waitFor({ state: 'visible' });
   assert.equal(await menu.getAttribute('aria-expanded'), 'true');
   await menu.press('Escape');
-  assert.equal(await page.getByRole('link', { name: 'Four pillars' }).isVisible(), false);
+  await pillars.waitFor({ state: 'hidden' });
   await page.locator('#theme-toggle').click();
   assert.equal(await page.locator('body').getAttribute('class'), 'dark-mode');
   await page.reload();

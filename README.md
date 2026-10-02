@@ -7,7 +7,10 @@ Inner Sanctuary is a small, interactive space for practicing reparenting: notici
 - **A guided dialogue:** choose one of four feelings to see a possible old thought, a steadier response, and one small action.
 - **Four care practices:** brief prompts for steady care, play, emotional steadiness, and self-compassion.
 - **A returning ritual:** three short steps to pause, listen for a need, and choose a response.
-- **A one-minute breathing pause:** animated inhale/exhale cues with a clear stop control. The pause is optional and ends early whenever the visitor chooses.
+- **A breathing studio:** 4-7-8, box, coherent and physiological-sigh techniques with a guided circle, countdown, 1/2/5 minute sessions and an optional soft sound cue.
+- **Gentle play:** bubbles, a ripple pond, a gratitude garden and a mandala, with no scores or timers.
+- **A mood check-in** that suggests a breathing technique or the play space.
+- **Calm interactions:** a soft cursor glow, slow scroll reveals and gentle parallax, all switched off for visitors who prefer reduced motion.
 - **A local check-in:** write an optional note, choose a need, and keep up to five notes in this browser. Notes are not sent to an account or server. Remove one note or clear all notes at any time. If browser storage is unavailable, a note is held only for the current visit.
 - **Light and dark appearance:** follows the device preference until changed, then remembers the choice on this device when browser storage is available.
 
