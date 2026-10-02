@@ -154,20 +154,106 @@ test('the page has no page numbers and no tiny text', async () => {
   await context.close();
 });
 
-test('mobile navigation and theme remain keyboard reachable', async () => {
+test('the status bar lists its buttons in order and the theme persists', async () => {
   const { context, page, errors } = await open();
-  await page.setViewportSize({ width: 375, height: 812 });
-  const menu = page.locator('#nav-toggle');
-  const pillars = page.getByRole('link', { name: 'Four pillars' });
-  await menu.click();
-  await pillars.waitFor({ state: 'visible' });
-  assert.equal(await menu.getAttribute('aria-expanded'), 'true');
-  await menu.press('Escape');
-  await pillars.waitFor({ state: 'hidden' });
+  const order = await page.locator('.status-bar .nav-label').evaluateAll((items) => items.map((item) => item.textContent.trim()));
+  assert.deepEqual(order, ['Saved feelings', 'Play', 'Breathe', 'Practice', 'Four pillars']);
+  const boxes = await page.locator('.status-bar > *').evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left));
+  assert.deepEqual(boxes, [...boxes].sort((a, b) => a - b));
+  const last = await page.locator('.status-bar > *').last().getAttribute('id');
+  assert.equal(last, 'menu-toggle');
+  assert.equal(await page.locator('#theme-toggle').evaluate((node) => node.nextElementSibling.id), 'menu-toggle');
   await page.locator('#theme-toggle').click();
   assert.equal(await page.locator('body').getAttribute('class'), 'dark-mode');
   await page.reload();
   assert.equal(await page.locator('body').getAttribute('class'), 'dark-mode');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('mobile shows a scrollable icon bar and the comfort menu opens by keyboard', async () => {
+  const { context, page, errors } = await open();
+  await page.setViewportSize({ width: 375, height: 812 });
+  assert.equal(await page.getByRole('link', { name: 'Four pillars' }).isVisible(), true);
+  const menu = page.locator('#menu-toggle');
+  const panel = page.locator('#settings-menu');
+  await menu.click();
+  await panel.waitFor({ state: 'visible' });
+  assert.equal(await menu.getAttribute('aria-expanded'), 'true');
+  await menu.press('Escape');
+  await panel.waitFor({ state: 'hidden' });
+  assert.equal(await menu.getAttribute('aria-expanded'), 'false');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('comfort settings apply, persist, and campfire keeps dark on', async () => {
+  const { context, page, errors } = await open();
+  await page.locator('#menu-toggle').click();
+  await page.locator('#set-campfire').check();
+  assert.equal(await page.locator('html').getAttribute('data-campfire'), 'on');
+  assert.equal(await page.locator('body').getAttribute('class'), 'dark-mode');
+  await page.locator('#theme-toggle').click({ force: true });
+  assert.equal(await page.locator('body').getAttribute('class'), 'dark-mode');
+  assert.equal(await page.locator('#set-warmth').isDisabled(), true);
+  await page.locator('#menu-toggle').click();
+  await page.locator('#set-eye').check();
+  assert.equal(await page.locator('#set-warmth').isDisabled(), false);
+  await page.locator('#set-warmth').fill('80');
+  assert.equal(await page.locator('#warmth-value').textContent(), '80%');
+  await page.locator('#set-static').check();
+  assert.equal(await page.locator('html').getAttribute('data-motion'), 'static');
+  await page.reload();
+  assert.equal(await page.locator('html').getAttribute('data-campfire'), 'on');
+  assert.equal(await page.locator('html').getAttribute('data-eyecare'), 'on');
+  assert.equal(await page.locator('html').getAttribute('data-motion'), 'static');
+  await page.locator('#menu-toggle').click();
+  assert.equal(await page.locator('#set-warmth').inputValue(), '80');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('the feeling cards behave as a keyboard radio group and sync the dialogue', async () => {
+  const { context, page, errors } = await open();
+  const first = page.locator('.feeling-option').first();
+  await first.focus();
+  await page.keyboard.press('ArrowDown');
+  assert.equal(await page.locator('[data-feeling="invisible"]').getAttribute('aria-checked'), 'true');
+  assert.equal(await page.locator('#dialogue-content').isVisible(), true);
+  assert.match(await page.locator('.wise-text').textContent(), /Your voice matters/);
+  await page.locator('[data-feeling="guilty"]').click();
+  assert.equal(await page.locator('[data-feeling="invisible"]').getAttribute('aria-checked'), 'false');
+  assert.equal(await page.locator('#feeling-select').inputValue(), 'guilty');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('saved feelings and garden plants persist and show in the drawer', async () => {
+  const { context, page, errors } = await open();
+  await page.locator('[data-feeling="overwhelmed"]').click();
+  await page.locator('#save-feeling').click();
+  await page.locator('[data-game="garden"]').click();
+  await page.locator('#garden-word').fill('warm tea');
+  await page.locator('#garden-plant').click();
+  await page.locator('#garden-plant').click();
+  assert.equal(await page.locator('#saved-count').textContent(), '3');
+  await page.reload();
+  assert.equal(await page.locator('#saved-count').textContent(), '3');
+  await page.locator('[data-game="garden"]').click();
+  assert.equal(await page.locator('#garden-field .flower-label').textContent(), 'warm tea');
+  await page.locator('[data-open-saved]').click();
+  await page.locator('#saved-drawer').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#saved-plants-summary').textContent(), 'Planted 2 flowers');
+  assert.equal(await page.locator('#saved-feelings-summary').textContent(), 'Saved feelings (1)');
+  assert.equal(await page.locator('#saved-feelings').isVisible(), false);
+  await page.locator('#saved-feelings-menu summary').click();
+  assert.match(await page.locator('#saved-feelings').textContent(), /break this down into tiny/);
+  await page.locator('#saved-plants-clear').click();
+  assert.equal(await page.locator('#saved-plants-summary').textContent(), 'Planted 0 flowers');
+  assert.equal(await page.locator('#garden-field .flower').count(), 0);
+  await page.keyboard.press('Escape');
+  await page.locator('#saved-drawer').waitFor({ state: 'hidden' });
+  assert.equal(await page.locator('[data-open-saved]').evaluate((node) => document.activeElement === node), true);
   assert.deepEqual(errors, []);
   await context.close();
 });
@@ -188,3 +274,32 @@ test('storage denial does not prevent the site or temporary check-ins from worki
   await context.close();
 });
 
+
+test('campfire mode draws fireflies only with full motion and clears when switched off', async () => {
+  const context = await browser.newContext({ reducedMotion: 'no-preference', viewport: { width: 1000, height: 700 } });
+  await context.addInitScript(() => localStorage.setItem('inner-sanctuary-settings', JSON.stringify({ campfire: true })));
+  await context.route('**/*', (route) => route.request().url().startsWith(base) ? route.continue() : route.abort());
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(base);
+  const lit = () => page.locator('.campfire-canvas').evaluate((canvas) => {
+    const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    let count = 0;
+    for (let index = 3; index < data.length; index += 4) if (data[index] > 8) count += 1;
+    return count;
+  });
+  await page.waitForTimeout(1200);
+  assert.ok(await lit() > 0);
+  assert.equal(await page.locator('.campfire-canvas').evaluate((node) => getComputedStyle(node).pointerEvents), 'none');
+  await page.locator('#menu-toggle').click();
+  await page.locator('#set-static').check();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator('.campfire-canvas').isVisible(), false);
+  await page.locator('#set-static').uncheck();
+  await page.locator('#set-campfire').uncheck();
+  await page.waitForTimeout(400);
+  assert.equal(await lit(), 0);
+  assert.deepEqual(errors, []);
+  await context.close();
+});

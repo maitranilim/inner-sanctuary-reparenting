@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node dev-server.mjs",
-    "check": "node --check script.js && node --check app-core.mjs && node --check breathing.mjs && node --check games.mjs && node --check ambient.mjs && node --check dev-server.mjs",
+    "check": "node --check script.js && node --check app-core.mjs && node --check breathing.mjs && node --check games.mjs && node --check ambient.mjs && node --check campfire.mjs && node --check settings.mjs && node --check haptics.mjs && node --check sound.mjs && node --check saved.mjs && node --check dev-server.mjs",
     "test": "node --test tests/*.test.mjs"
   },
   "devDependencies": {
