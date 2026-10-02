@@ -1,3 +1,7 @@
+import { getMotion } from './settings.mjs';
+import { cancel as cancelHaptics, play as haptic, playBreath } from './haptics.mjs';
+import { createBreathingSound } from './sound.mjs';
+
 export const PATTERNS = [
   {
     id: '478',
@@ -105,7 +109,6 @@ export function initBreathing() {
   const soundToggle = byId('breathing-sound');
   const patternButtons = [...document.querySelectorAll('[data-pattern]')];
   const durationButtons = [...document.querySelectorAll('[data-minutes]')];
-  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   const idleMessage = 'When you’re ready, begin with a slow inhale.';
 
   let pattern = PATTERNS[0];
@@ -114,33 +117,25 @@ export function initBreathing() {
   let frame = null;
   let startedAt = 0;
   let lastIndex = -1;
-  let audio = null;
+  let lastTick = 0;
+  const pad = createBreathingSound();
 
-  function chime(key) {
-    if (!soundToggle.checked || key === 'hold' || key === 'rest') return;
-    try {
-      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audio.createOscillator();
-      const gain = audio.createGain();
-      oscillator.type = 'sine';
-      oscillator.frequency.value = key === 'out' ? 262 : 330;
-      gain.gain.setValueAtTime(0.0001, audio.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.05, audio.currentTime + 0.25);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 1.6);
-      oscillator.connect(gain).connect(audio.destination);
-      oscillator.start();
-      oscillator.stop(audio.currentTime + 1.7);
-    } catch {
-      soundToggle.checked = false;
-    }
-    try { navigator.vibrate?.(key === 'out' ? 40 : 20); } catch {}
+  function cue(state) {
+    const { phase, cycle } = state;
+    if (soundToggle.checked) pad.phase(phase.key, phase.seconds, cycle);
+    if (phase.key === 'in' || phase.key === 'in2') playBreath(phase.seconds, 'in');
+    else if (phase.key === 'out') playBreath(phase.seconds, 'out');
+    else haptic('hold');
+    lastTick = performance.now();
   }
 
   function setScale(scale) {
-    if (!reducedMotion) ring.style.transform = `scale(${scale.toFixed(3)})`;
+    if (getMotion() !== 'static') ring.style.transform = `scale(${scale.toFixed(3)})`;
   }
 
   function reset(message = idleMessage) {
+    pad.stop();
+    cancelHaptics();
     if (frame !== null) window.cancelAnimationFrame(frame);
     frame = null;
     running = false;
@@ -159,6 +154,7 @@ export function initBreathing() {
     const elapsed = (now - startedAt) / 1000;
     if (elapsed >= minutes * 60) {
       reset('Well done. Take a moment before you continue.');
+      haptic('complete');
       return;
     }
     const state = getPhaseState(pattern, elapsed);
@@ -166,7 +162,10 @@ export function initBreathing() {
       lastIndex = state.index;
       circle.textContent = state.phase.label;
       instruction.textContent = state.phase.hint;
-      chime(state.phase.key);
+      cue(state);
+    } else if ((state.phase.key === 'hold' || state.phase.key === 'rest') && performance.now() - lastTick > 2000) {
+      haptic('hold');
+      lastTick = performance.now();
     }
     count.textContent = String(Math.ceil(state.remaining));
     cycles.textContent = `Round ${state.cycle}`;
@@ -179,6 +178,7 @@ export function initBreathing() {
     running = true;
     startedAt = performance.now();
     ring.classList.add('active');
+    if (soundToggle.checked) pad.start();
     toggle.textContent = 'Stop';
     toggle.setAttribute('aria-pressed', 'true');
     tick(startedAt);

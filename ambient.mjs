@@ -1,10 +1,17 @@
+import { getMotion } from './settings.mjs';
+
 const REVEAL_SELECTOR = [
   '.section-index', '.section-heading', '.intro-grid', '.approach-card', '.both-note', '.practice-panel',
   '.pillar-card', '.breathe-panel', '.game-shell', '.ritual-step', '.ritual-quote', '.checkin-grid', '.arrive-card',
 ].join(',');
 
+const ORB_TIME_CONSTANT = 0.5;
+
+export function easeToward(current, target, deltaSeconds, timeConstant = ORB_TIME_CONSTANT) {
+  return current + (target - current) * (1 - Math.exp(-deltaSeconds / timeConstant));
+}
+
 export function initAmbient() {
-  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   const canHover = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches ?? false;
   const root = document.documentElement;
 
@@ -36,8 +43,6 @@ export function initAmbient() {
     sections.forEach((section) => spy.observe(section));
   }
 
-  if (reduced) return;
-
   if ('IntersectionObserver' in window) {
     const targets = [...document.querySelectorAll(REVEAL_SELECTOR)];
     targets.forEach((element) => {
@@ -45,7 +50,6 @@ export function initAmbient() {
       element.dataset.reveal = '';
       element.style.setProperty('--d', `${Math.min(siblings.indexOf(element), 5) * 0.1}s`);
     });
-    root.classList.add('reveal-ready');
     const reveal = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
@@ -55,6 +59,13 @@ export function initAmbient() {
       });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
     targets.forEach((element) => reveal.observe(element));
+    const syncReveal = () => {
+      const full = getMotion() === 'full';
+      root.classList.toggle('reveal-ready', full);
+      if (!full) targets.forEach((element) => element.classList.add('is-visible'));
+    };
+    syncReveal();
+    new MutationObserver(syncReveal).observe(root, { attributes: true, attributeFilter: ['data-motion'] });
   }
 
   if (!canHover) return;
@@ -69,16 +80,17 @@ export function initAmbient() {
   let currentX = targetX;
   let currentY = targetY;
   let running = false;
+  let last = 0;
 
-  function loop() {
-    currentX += (targetX - currentX) * 0.08;
-    currentY += (targetY - currentY) * 0.08;
+  function loop(now) {
+    const delta = Math.min(0.064, Math.max(0.001, (now - last) / 1000));
+    last = now;
+    currentX = easeToward(currentX, targetX, delta);
+    currentY = easeToward(currentY, targetY, delta);
     glow.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-    const px = (currentX / window.innerWidth - 0.5) * 2;
-    const py = (currentY / window.innerHeight - 0.5) * 2;
-    root.style.setProperty('--px', px.toFixed(3));
-    root.style.setProperty('--py', py.toFixed(3));
-    if (Math.abs(targetX - currentX) > 0.5 || Math.abs(targetY - currentY) > 0.5) {
+    root.style.setProperty('--px', ((currentX / window.innerWidth - 0.5) * 2).toFixed(3));
+    root.style.setProperty('--py', ((currentY / window.innerHeight - 0.5) * 2).toFixed(3));
+    if (Math.abs(targetX - currentX) > 0.4 || Math.abs(targetY - currentY) > 0.4) {
       window.requestAnimationFrame(loop);
     } else {
       running = false;
@@ -86,12 +98,13 @@ export function initAmbient() {
   }
 
   window.addEventListener('pointermove', (event) => {
-    if (event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch' || getMotion() !== 'full') return;
     targetX = event.clientX;
     targetY = event.clientY;
     glow.classList.add('on');
     if (!running) {
       running = true;
+      last = performance.now();
       window.requestAnimationFrame(loop);
     }
   }, { passive: true });

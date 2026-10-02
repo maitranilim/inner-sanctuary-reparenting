@@ -11,12 +11,20 @@ import {
 import { getMoodSuggestion, initBreathing } from './breathing.mjs';
 import { initGames } from './games.mjs';
 import { initAmbient } from './ambient.mjs';
+import { createSettings, getMotion } from './settings.mjs';
+import { configureHaptics, initWelcomeHaptic, play as haptic } from './haptics.mjs';
+import { setSoundEnabled } from './sound.mjs';
+import { createSavedStore, initSavedDrawer } from './saved.mjs';
 
 const byId = (id) => document.getElementById(id);
 const feelingSelect = byId('feeling-select');
+const feelingOptions = [...document.querySelectorAll('.feeling-option')];
 const dialogue = byId('dialogue-content');
-const copyButton = document.querySelector('.copy-btn');
+const copyButton = document.querySelector('.action-buttons .copy-btn');
+const saveFeelingButton = byId('save-feeling');
 const copyStatus = byId('copy-status');
+const settings = createSettings();
+const saved = createSavedStore();
 
 function readStorage(key) {
   try {
@@ -35,11 +43,28 @@ function writeStorage(key, value) {
   }
 }
 
+configureHaptics(() => settings.get().haptics && getMotion() !== 'static');
+setSoundEnabled(settings.get().sound);
+initWelcomeHaptic();
+
+let currentFeeling = '';
+
+function syncFeelingOptions(value) {
+  feelingOptions.forEach((option, index) => {
+    const selected = option.dataset.feeling === value;
+    option.setAttribute('aria-checked', String(selected));
+    option.tabIndex = selected || (!value && index === 0) ? 0 : -1;
+  });
+}
+
 function renderDialogue(feeling) {
   const response = getDialogue(feeling);
+  currentFeeling = response ? feeling : '';
+  syncFeelingOptions(currentFeeling);
   if (!response) {
     dialogue.hidden = true;
     copyButton.disabled = true;
+    saveFeelingButton.disabled = true;
     return;
   }
   dialogue.querySelector('.dialogue-trigger').textContent = response.trigger;
@@ -48,10 +73,31 @@ function renderDialogue(feeling) {
   dialogue.querySelector('.action-text').textContent = `One small thing: ${response.action}`;
   dialogue.hidden = false;
   copyButton.disabled = false;
+  saveFeelingButton.disabled = false;
   copyStatus.textContent = '';
 }
 
 feelingSelect.addEventListener('change', () => renderDialogue(feelingSelect.value));
+
+feelingOptions.forEach((option, index) => {
+  option.addEventListener('click', () => {
+    haptic('tap');
+    feelingSelect.value = option.dataset.feeling;
+    feelingSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  option.addEventListener('keydown', (event) => {
+    const keys = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+    let target = null;
+    if (event.key in keys) target = feelingOptions[(index + keys[event.key] + feelingOptions.length) % feelingOptions.length];
+    if (event.key === 'Home') target = feelingOptions[0];
+    if (event.key === 'End') target = feelingOptions[feelingOptions.length - 1];
+    if (!target) return;
+    event.preventDefault();
+    target.focus();
+    target.click();
+  });
+});
+syncFeelingOptions('');
 
 copyButton.addEventListener('click', async () => {
   const response = `${dialogue.querySelector('.wise-text').textContent}\n\n${dialogue.querySelector('.action-text').textContent}`;
@@ -69,48 +115,90 @@ copyButton.addEventListener('click', async () => {
   }
 });
 
+saveFeelingButton.addEventListener('click', () => {
+  const response = getDialogue(currentFeeling);
+  if (!response) return;
+  saved.addFeeling({ key: currentFeeling, trigger: response.trigger, wise: response.wise, action: response.action });
+  haptic('tap');
+  copyStatus.textContent = saved.isPersistent() ? 'Feeling saved.' : 'Feeling saved for this visit only; browser storage is unavailable.';
+  saveFeelingButton.textContent = 'Saved ✓';
+  window.setTimeout(() => { saveFeelingButton.textContent = 'Save feeling'; }, 1800);
+});
+
 const themeButton = byId('theme-toggle');
 const themeStored = readStorage(THEME_KEY);
-const initialTheme = themeStored.value === 'dark'
+let userTheme = themeStored.value === 'dark'
   ? 'dark'
   : themeStored.value === 'light'
     ? 'light'
     : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-function setTheme(theme, persist = true) {
-  const isDark = theme === 'dark';
+function applyTheme() {
+  const campfire = settings.get().campfire;
+  const isDark = campfire || userTheme === 'dark';
   document.body.classList.toggle('dark-mode', isDark);
   themeButton.setAttribute('aria-pressed', String(isDark));
-  themeButton.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  themeButton.setAttribute('aria-disabled', String(campfire));
+  themeButton.setAttribute('aria-label', campfire ? 'Campfire mode keeps the dark theme on' : isDark ? 'Switch to light mode' : 'Switch to dark mode');
   themeButton.querySelector('span').textContent = isDark ? '☀' : '☾';
-  if (persist) writeStorage(THEME_KEY, theme);
 }
 
-setTheme(initialTheme, false);
+applyTheme();
 themeButton.addEventListener('click', () => {
-  setTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
+  if (settings.get().campfire) return;
+  userTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+  writeStorage(THEME_KEY, userTheme);
+  applyTheme();
 });
 
-const navToggle = byId('nav-toggle');
-const navLinks = byId('site-navigation');
-function closeNavigation(restoreFocus = false) {
-  navLinks.classList.remove('open');
-  navToggle.setAttribute('aria-expanded', 'false');
-  navToggle.querySelector('.visually-hidden').textContent = 'Open navigation';
-  if (restoreFocus) navToggle.focus();
+const menuToggle = byId('menu-toggle');
+const menuPanel = byId('settings-menu');
+const switches = {
+  reduceMotion: byId('set-reduce'),
+  staticMode: byId('set-static'),
+  campfire: byId('set-campfire'),
+  eyeCare: byId('set-eye'),
+  sound: byId('set-sound'),
+  haptics: byId('set-haptics'),
+};
+const warmthSlider = byId('set-warmth');
+const warmthOutput = byId('warmth-value');
+
+function syncSettings() {
+  const current = settings.get();
+  Object.entries(switches).forEach(([key, input]) => { input.checked = current[key]; });
+  warmthSlider.value = String(current.warmth);
+  warmthSlider.disabled = !current.eyeCare;
+  warmthOutput.textContent = `${current.warmth}%`;
+  setSoundEnabled(current.sound);
+  applyTheme();
 }
-navToggle.addEventListener('click', () => {
-  const isOpen = navLinks.classList.toggle('open');
-  navToggle.setAttribute('aria-expanded', String(isOpen));
-  navToggle.querySelector('.visually-hidden').textContent = isOpen ? 'Close navigation' : 'Open navigation';
+
+Object.entries(switches).forEach(([key, input]) => {
+  input.addEventListener('change', () => settings.set({ [key]: input.checked }));
 });
-navLinks.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => closeNavigation()));
+warmthSlider.addEventListener('input', () => settings.set({ warmth: Number(warmthSlider.value) }));
+settings.subscribe(syncSettings);
+syncSettings();
+
+function closeMenu(restoreFocus = false) {
+  menuPanel.classList.remove('open');
+  menuToggle.setAttribute('aria-expanded', 'false');
+  menuToggle.querySelector('.visually-hidden').textContent = 'Open comfort settings';
+  if (restoreFocus) menuToggle.focus();
+}
+menuToggle.addEventListener('click', () => {
+  const isOpen = menuPanel.classList.toggle('open');
+  menuToggle.setAttribute('aria-expanded', String(isOpen));
+  menuToggle.querySelector('.visually-hidden').textContent = isOpen ? 'Close comfort settings' : 'Open comfort settings';
+});
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && navLinks.classList.contains('open')) closeNavigation(true);
+  if (event.key === 'Escape' && menuPanel.classList.contains('open')) closeMenu(true);
 });
 document.addEventListener('click', (event) => {
-  if (!event.target.closest('.site-nav')) closeNavigation();
+  if (!event.target.closest('.settings-menu, .menu-toggle')) closeMenu();
 });
+document.querySelectorAll('.nav-links a').forEach((link) => link.addEventListener('click', () => closeMenu()));
 
 const noteInput = byId('check-in-note');
 const characterCount = byId('character-count');
@@ -202,9 +290,10 @@ document.querySelectorAll('[data-need]').forEach((button) => {
 
 renderHistory();
 
-const breathing = initBreathing();
-initGames();
+const breathing = initBreathing({ settings });
+initGames({ saved });
 initAmbient();
+initSavedDrawer({ store: saved, getNotes: () => history, onOpen: () => closeMenu() });
 
 const moodButtons = [...document.querySelectorAll('[data-mood]')];
 const moodBox = byId('mood-suggestion');

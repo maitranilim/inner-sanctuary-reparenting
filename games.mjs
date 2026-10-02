@@ -1,3 +1,7 @@
+import { getMotion } from './settings.mjs';
+import { play as haptic } from './haptics.mjs';
+import { sounds } from './sound.mjs';
+
 export const AFFIRMATIONS = [
   'You are doing better than you think.',
   'It is okay to go slowly.',
@@ -13,7 +17,7 @@ export const AFFIRMATIONS = [
 
 export const GARDEN_LIMIT = 30;
 export const FLOWERS = ['✿', '❀', '✾', '❁', '✽'];
-export const FLOWER_COLORS = ['var(--rust)', 'var(--gold)', 'var(--green)', '#d69b76', '#b6775f'];
+export const FLOWER_COLORS = ['var(--flower-1)', 'var(--flower-2)', 'var(--flower-3)', 'var(--flower-4)', 'var(--flower-5)'];
 export const MANDALA_COLORS = ['#526d58', '#a85d48', '#c69c59', '#d69b76', '#324f41'];
 
 export function pick(list, random = Math.random) {
@@ -24,7 +28,7 @@ export function trimGardenWord(value) {
   return String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, 24);
 }
 
-const reduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+const reduced = () => getMotion() !== 'full';
 
 function fitCanvas(canvas, context) {
   const rect = canvas.getBoundingClientRect();
@@ -61,6 +65,8 @@ function createBubbles() {
     bubble.style.setProperty('--rest', `${10 + Math.random() * 60}%`);
     bubble.addEventListener('click', () => {
       message.textContent = pick(AFFIRMATIONS);
+      sounds.bubble();
+      haptic('bubble');
       bubble.classList.add('popped');
       window.setTimeout(() => bubble.remove(), 450);
     });
@@ -100,7 +106,15 @@ function createPond() {
   let size = null;
   let lastRipple = 0;
 
+  let lastSound = 0;
+
   function addRipple(x, y, strong = false) {
+    const now = performance.now();
+    if (strong || now - lastSound > 420) {
+      lastSound = now;
+      sounds.ripple(strong);
+    }
+    if (strong) haptic('ripple');
     ripples.push({ x, y, radius: strong ? 6 : 3, alpha: strong ? 0.7 : 0.45, speed: strong ? 70 : 52 });
     if (ripples.length > 40) ripples.shift();
     if (frame === null) {
@@ -163,33 +177,59 @@ function createPond() {
   return { show() { size = null; } };
 }
 
-function createGarden() {
+function createGarden(saved) {
   const field = document.getElementById('garden-field');
   const input = document.getElementById('garden-word');
   const status = document.getElementById('garden-status');
 
-  function plant(xPercent, yPercent) {
-    const word = trimGardenWord(input.value);
+  function render(plant, animate) {
     const flower = document.createElement('span');
     flower.className = 'flower';
-    flower.style.left = `${xPercent}%`;
-    flower.style.top = `${yPercent}%`;
-    flower.style.setProperty('--tone', pick(FLOWER_COLORS));
+    flower.dataset.id = plant.id;
+    flower.style.left = `${plant.x}%`;
+    flower.style.top = `${plant.y}%`;
+    flower.style.setProperty('--tone', FLOWER_COLORS[plant.tone % FLOWER_COLORS.length]);
     const bloom = document.createElement('span');
     bloom.className = 'bloom';
-    bloom.textContent = pick(FLOWERS);
+    if (!animate) bloom.style.animation = 'none';
+    bloom.textContent = plant.symbol;
     flower.append(bloom);
-    if (word) {
+    if (plant.word) {
       const label = document.createElement('span');
       label.className = 'flower-label';
-      label.textContent = word;
+      label.textContent = plant.word;
       flower.append(label);
     }
     field.append(flower);
-    const flowers = field.querySelectorAll('.flower');
-    if (flowers.length > GARDEN_LIMIT) flowers[0].remove();
+  }
+
+  function sync(animate = false) {
+    const plants = saved.get().plants;
+    const known = new Set(plants.map((plant) => plant.id));
+    field.querySelectorAll('.flower').forEach((flower) => {
+      if (!known.has(flower.dataset.id)) flower.remove();
+    });
+    const present = new Set([...field.querySelectorAll('.flower')].map((flower) => flower.dataset.id));
+    plants.forEach((plant) => {
+      if (!present.has(plant.id)) render(plant, animate);
+    });
+  }
+
+  function plant(xPercent, yPercent) {
+    const word = trimGardenWord(input.value);
+    const created = saved.addPlant({
+      word,
+      symbol: pick(FLOWERS),
+      tone: Math.floor(Math.random() * FLOWER_COLORS.length),
+      x: xPercent,
+      y: yPercent,
+    });
     input.value = '';
-    status.textContent = word ? `You planted “${word}”.` : 'A flower has bloomed.';
+    sync(true);
+    sounds.bloom();
+    haptic('bloom');
+    const kept = saved.isPersistent() ? '' : ' It will stay for this visit only.';
+    status.textContent = (created?.word ? `You planted “${created.word}”.` : 'A flower has bloomed.') + kept;
   }
 
   field.addEventListener('click', (event) => {
@@ -204,9 +244,11 @@ function createGarden() {
     plant(8 + Math.random() * 84, 18 + Math.random() * 68);
   });
   document.getElementById('garden-clear').addEventListener('click', () => {
-    field.querySelectorAll('.flower').forEach((flower) => flower.remove());
+    saved.clear('plants');
     status.textContent = 'The garden is clear and ready for new seeds.';
   });
+  saved.subscribe(() => sync(false));
+  sync(false);
   return { show() {} };
 }
 
@@ -216,6 +258,7 @@ function createMandala() {
   const segments = 8;
   let size = null;
   let drawing = false;
+  let lastNote = 0;
 
   function ensure() {
     size = fitCanvas(canvas, context) || size;
@@ -230,6 +273,12 @@ function createMandala() {
     const dy = y - cy;
     const distance = Math.hypot(dx, dy);
     const angle = Math.atan2(dy, dx);
+    const now = performance.now();
+    if (now - lastNote > 90) {
+      lastNote = now;
+      sounds.mandala(Math.floor(distance / 28));
+      haptic('mandala');
+    }
     context.fillStyle = MANDALA_COLORS[Math.floor(distance / 28) % MANDALA_COLORS.length];
     context.globalAlpha = 0.85;
     for (let index = 0; index < segments; index += 1) {
@@ -277,13 +326,13 @@ function createMandala() {
   return { show() { size = null; } };
 }
 
-export function initGames() {
+export function initGames({ saved }) {
   const tabs = [...document.querySelectorAll('[data-game]')];
   const panels = [...document.querySelectorAll('[data-game-panel]')];
   const games = {
     bubbles: createBubbles(),
     pond: createPond(),
-    garden: createGarden(),
+    garden: createGarden(saved),
     mandala: createMandala(),
   };
 

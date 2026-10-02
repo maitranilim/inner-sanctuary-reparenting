@@ -10,21 +10,50 @@
   <script type="module" src="script.js"></script>
 </head>
 <body>
+  <script>
+    (function () {
+      try {
+        var root = document.documentElement;
+        var raw = localStorage.getItem('inner-sanctuary-settings');
+        var saved = raw ? JSON.parse(raw) : {};
+        var theme = localStorage.getItem('inner-sanctuary-theme');
+        var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var systemReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var dark = saved.campfire === true || theme === 'dark' || (theme !== 'light' && systemDark);
+        if (dark) document.body.classList.add('dark-mode');
+        if (saved.campfire === true) root.dataset.campfire = 'on';
+        if (saved.eyeCare === true) root.dataset.eyecare = 'on';
+        root.dataset.motion = saved.staticMode === true ? 'static' : (saved.reduceMotion === true || systemReduced ? 'reduced' : 'full');
+        if (typeof saved.warmth === 'number') root.style.setProperty('--warm', String(0.06 + Math.min(100, Math.max(0, saved.warmth)) / 100 * 0.3));
+      } catch (error) {}
+    })();
+  </script>
   <a class="skip-link" href="#main">Skip to the practice</a>
   <header class="site-header">
     <div class="header-inner">
       <a class="wordmark" href="#top" aria-label="Inner Sanctuary home"><span class="wordmark-icon" aria-hidden="true">✳</span> Inner Sanctuary</a>
-      <nav class="site-nav" aria-label="Main navigation">
-        <button id="nav-toggle" class="nav-toggle" type="button" aria-controls="site-navigation" aria-expanded="false"><span class="visually-hidden">Open navigation</span><span class="burger" aria-hidden="true"><i></i><i></i><i></i></span></button>
-        <div class="nav-links" id="site-navigation">
-          <a href="#practice"><span class="nav-icon" aria-hidden="true">✦</span>Practice</a>
-          <a href="#breathe"><span class="nav-icon" aria-hidden="true">◌</span>Breathe</a>
-          <a href="#play"><span class="nav-icon" aria-hidden="true">✿</span>Play</a>
-          <a href="#pillars"><span class="nav-icon" aria-hidden="true">♡</span>Four pillars</a>
-          <a href="#check-in"><span class="nav-icon" aria-hidden="true">✎</span>Check-in</a>
-        </div>
+      <div class="status-bar">
+        <nav class="nav-links" id="site-navigation" aria-label="Main navigation">
+          <button type="button" class="nav-item" data-open-saved aria-haspopup="dialog" aria-controls="saved-drawer" aria-expanded="false"><span class="nav-icon" aria-hidden="true">❤</span><span class="nav-label">Saved<span class="nav-long"> feelings</span></span><span id="saved-count" class="saved-count" hidden>0</span></button>
+          <a href="#play"><span class="nav-icon" aria-hidden="true">✿</span><span class="nav-label">Play</span></a>
+          <a href="#breathe"><span class="nav-icon" aria-hidden="true">◌</span><span class="nav-label">Breathe</span></a>
+          <a href="#practice"><span class="nav-icon" aria-hidden="true">✦</span><span class="nav-label">Practice</span></a>
+          <a href="#pillars"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Four pillars</span></a>
+        </nav>
+        <span class="bar-divider" aria-hidden="true"></span>
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false"><span aria-hidden="true">☾</span></button>
-      </nav>
+        <button id="menu-toggle" class="menu-toggle" type="button" aria-controls="settings-menu" aria-expanded="false" aria-haspopup="true"><span class="visually-hidden">Open comfort settings</span><span class="burger" aria-hidden="true"><i></i><i></i><i></i></span></button>
+      </div>
+      <div id="settings-menu" class="settings-menu" role="group" aria-labelledby="settings-title">
+        <p id="settings-title" class="settings-title">Comfort settings</p>
+        <div class="switch-row"><div class="switch-text"><label for="set-reduce">Reduce motion</label><small>Calms movement and effects</small></div><input id="set-reduce" class="switch" type="checkbox" role="switch"></div>
+        <div class="switch-row"><div class="switch-text"><label for="set-static">Static</label><small>Stops all animation and haptics</small></div><input id="set-static" class="switch" type="checkbox" role="switch"></div>
+        <div class="switch-row"><div class="switch-text"><label for="set-campfire">Campfire mode</label><small>Deeper, richer OLED black</small></div><input id="set-campfire" class="switch" type="checkbox" role="switch"></div>
+        <div class="switch-row"><div class="switch-text"><label for="set-eye">Eye care</label><small>Softer, warmer light</small></div><input id="set-eye" class="switch" type="checkbox" role="switch"></div>
+        <div class="warmth-row"><label for="set-warmth">Warmth</label><input id="set-warmth" class="warmth-slider" type="range" min="0" max="100" step="1" value="40" aria-describedby="warmth-value"><output id="warmth-value" for="set-warmth">40%</output></div>
+        <div class="switch-row"><div class="switch-text"><label for="set-sound">Sound</label><small>Soft effects and breathing pads</small></div><input id="set-sound" class="switch" type="checkbox" role="switch"></div>
+        <div class="switch-row"><div class="switch-text"><label for="set-haptics">Haptics</label><small>Gentle vibration on supported phones</small></div><input id="set-haptics" class="switch" type="checkbox" role="switch"></div>
+      </div>
     </div>
     <div class="scroll-line" aria-hidden="true"><span></span></div>
   </header>
@@ -90,8 +119,14 @@
         <div class="section-heading"><div><p class="eyebrow">Pause · notice · respond</p><h2 id="practice-title">What’s here for you?</h2></div><p>Choose a feeling to see a possible response. Keep what fits; leave the rest.</p></div>
         <div class="practice-panel">
           <div class="feeling-picker">
-            <label for="feeling-select">I’m feeling…</label>
-            <select id="feeling-select">
+            <p id="feeling-label" class="picker-title">I’m feeling…</p>
+            <div class="feeling-options" role="radiogroup" aria-labelledby="feeling-label">
+              <button type="button" role="radio" aria-checked="false" data-feeling="unworthy" class="feeling-option"><span class="feeling-icon" aria-hidden="true">◒</span><span class="feeling-copy"><span class="feeling-name">Not good enough</span><span class="feeling-hint">Questioning your worth</span></span><span class="feeling-check" aria-hidden="true">✓</span></button>
+              <button type="button" role="radio" aria-checked="false" data-feeling="invisible" class="feeling-option"><span class="feeling-icon" aria-hidden="true">◌</span><span class="feeling-copy"><span class="feeling-name">Invisible or ignored</span><span class="feeling-hint">Unseen or spoken over</span></span><span class="feeling-check" aria-hidden="true">✓</span></button>
+              <button type="button" role="radio" aria-checked="false" data-feeling="overwhelmed" class="feeling-option"><span class="feeling-icon" aria-hidden="true">≈</span><span class="feeling-copy"><span class="feeling-name">Overwhelmed or scared</span><span class="feeling-hint">Too much at once</span></span><span class="feeling-check" aria-hidden="true">✓</span></button>
+              <button type="button" role="radio" aria-checked="false" data-feeling="guilty" class="feeling-option"><span class="feeling-icon" aria-hidden="true">♡</span><span class="feeling-copy"><span class="feeling-name">Guilty for a boundary</span><span class="feeling-hint">Protecting your peace</span></span><span class="feeling-check" aria-hidden="true">✓</span></button>
+            </div>
+            <select id="feeling-select" class="visually-hidden" tabindex="-1" aria-label="I’m feeling">
               <option value="">Choose a feeling</option>
               <option value="unworthy">Not good enough</option>
               <option value="invisible">Invisible or ignored</option>
@@ -105,7 +140,7 @@
             <div class="voice-card old-card"><span class="voice-label"><span aria-hidden="true">◌</span> The old voice</span><p class="old-text"></p></div>
             <div class="response-connector" aria-hidden="true"><span></span> A kinder answer <span></span></div>
             <div class="voice-card wise-card"><span class="voice-label"><span aria-hidden="true">✳</span> A steadier voice</span><p class="wise-text"></p></div>
-            <div class="action-row"><span class="action-spark" aria-hidden="true">✦</span><p class="action-text"></p><button class="copy-btn" type="button" disabled>Copy response</button></div>
+            <div class="action-row"><span class="action-spark" aria-hidden="true">✦</span><p class="action-text"></p><div class="action-buttons"><button class="copy-btn" type="button" disabled>Copy response</button><button id="save-feeling" class="copy-btn" type="button" disabled>Save feeling</button></div></div>
             <p id="copy-status" class="visually-hidden" role="status" aria-live="polite"></p>
           </div>
         </div>
@@ -131,7 +166,7 @@
               <button type="button" data-minutes="2" aria-pressed="true">2 min</button>
               <button type="button" data-minutes="5" aria-pressed="false">5 min</button>
             </div>
-            <label class="sound-option"><input id="breathing-sound" type="checkbox"> Soft sound cue</label>
+            <label class="sound-option"><input id="breathing-sound" type="checkbox" checked> Calming sound</label>
           </div>
           <div class="breathing-controls">
             <button id="breathing-toggle" class="button button-light" type="button" aria-pressed="false">Begin breathing</button>
@@ -237,5 +272,17 @@
       <p>Made with care · Your check-ins stay on this device</p>
     </div>
   </footer>
+  <div id="saved-backdrop" class="drawer-backdrop" hidden></div>
+  <aside id="saved-drawer" class="saved-drawer" role="dialog" aria-modal="true" aria-labelledby="saved-title" hidden>
+    <div class="drawer-head"><h2 id="saved-title">Saved feelings</h2><button id="saved-close" class="drawer-close" type="button" aria-label="Close saved feelings"><span aria-hidden="true">✕</span></button></div>
+    <div class="drawer-body">
+      <section aria-labelledby="saved-feelings-title"><h3 id="saved-feelings-title">Feelings</h3><ul id="saved-feelings" class="saved-list"></ul></section>
+      <section aria-labelledby="saved-plants-title"><h3 id="saved-plants-title">Gratitude garden</h3><ul id="saved-plants" class="saved-list"></ul></section>
+      <section aria-labelledby="saved-notes-title"><h3 id="saved-notes-title">Check-in notes</h3><ul id="saved-notes" class="saved-list"></ul></section>
+      <p id="saved-status" class="save-status" role="status" aria-live="polite"></p>
+    </div>
+    <div class="drawer-foot"><button id="saved-clear" class="text-button" type="button">Clear saved feelings and garden</button></div>
+  </aside>
+  <div class="eyecare-overlay" aria-hidden="true"></div>
 </body>
 </html>

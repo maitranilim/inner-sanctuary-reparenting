@@ -58,3 +58,70 @@ export function formatCheckInDate(date) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(parsed);
 }
 
+
+export const SAVED_KEY = 'inner-sanctuary-saved';
+export const MAX_SAVED_FEELINGS = 20;
+export const MAX_SAVED_PLANTS = 30;
+
+const text = (value, limit) => (typeof value === 'string' ? value.trim().slice(0, limit) : '');
+const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
+
+export function makeId() {
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+}
+
+export function normalizeSaved(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const feelings = (Array.isArray(source.feelings) ? source.feelings : [])
+    .filter((item) => item && typeof item === 'object' && text(item.wise, 400))
+    .map((item) => ({
+      id: text(item.id, 40) || makeId(),
+      key: text(item.key, 40),
+      trigger: text(item.trigger, 240),
+      wise: text(item.wise, 400),
+      action: text(item.action, 240),
+      date: text(item.date, 40),
+    }))
+    .slice(0, MAX_SAVED_FEELINGS);
+  const plants = (Array.isArray(source.plants) ? source.plants : [])
+    .filter((item) => item && typeof item === 'object')
+    .map((item) => ({
+      id: text(item.id, 40) || makeId(),
+      word: text(item.word, 24),
+      symbol: text(item.symbol, 4) || '✿',
+      tone: Math.max(0, Math.floor(number(item.tone, 0))),
+      x: Math.min(100, Math.max(0, number(item.x, 50))),
+      y: Math.min(100, Math.max(0, number(item.y, 50))),
+      date: text(item.date, 40),
+    }))
+    .slice(-MAX_SAVED_PLANTS);
+  return { feelings, plants };
+}
+
+export function addFeeling(saved, entry, date) {
+  const current = normalizeSaved(saved);
+  const next = normalizeSaved({ feelings: [{ ...entry, id: makeId(), date: String(date) }] });
+  if (!next.feelings.length) return current;
+  const rest = current.feelings.filter((item) => item.key !== next.feelings[0].key || item.wise !== next.feelings[0].wise);
+  return { ...current, feelings: [next.feelings[0], ...rest].slice(0, MAX_SAVED_FEELINGS) };
+}
+
+export function addPlant(saved, plant, date) {
+  const current = normalizeSaved(saved);
+  const next = normalizeSaved({ plants: [{ ...plant, id: makeId(), date: String(date) }] });
+  return { ...current, plants: [...current.plants, ...next.plants].slice(-MAX_SAVED_PLANTS) };
+}
+
+export function removeSaved(saved, kind, id) {
+  const current = normalizeSaved(saved);
+  if (kind === 'feeling') return { ...current, feelings: current.feelings.filter((item) => item.id !== id) };
+  if (kind === 'plant') return { ...current, plants: current.plants.filter((item) => item.id !== id) };
+  return current;
+}
+
+export function clearSaved(saved, kind) {
+  const current = normalizeSaved(saved);
+  if (kind === 'feelings') return { ...current, feelings: [] };
+  if (kind === 'plants') return { ...current, plants: [] };
+  return { feelings: [], plants: [] };
+}
