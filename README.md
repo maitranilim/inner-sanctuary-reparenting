@@ -11,7 +11,7 @@ Inner Sanctuary is a small, interactive space for practicing reparenting: notici
 - **Gentle play:** bubbles, a ripple pond, a gratitude garden and a mandala, with no scores or timers.
 - **A mood check-in** that suggests a breathing technique or the play space.
 - **Calm interactions:** a soft cursor glow, slow scroll reveals and gentle parallax, all switched off for visitors who prefer reduced motion.
-- **Comfort menu:** reduce motion, static mode, Campfire (OLED black) mode, eye care with a warmth slider, plus sound and haptics switches.
+- **Comfort menu:** reduce motion, static mode, Campfire (OLED black) mode, eye care with a warmth slider, plus sound and haptics switches. Campfire mode also adds slow, glowing fireflies and the occasional faint ember streak (off with Reduce motion or Static).
 - **Sound and haptics:** soft generated sounds for bubbles, ripples, the garden and the mandala; generated calming pads for breathing (add `data-track="audio/calm.ogg,audio/calm.mp3"` to the breathe section to play your own royalty-free track instead); layered vibration patterns on Android phones.
 - **Saved feelings:** a drawer that keeps saved feelings and gratitude garden plants in this browser.
 - **A local check-in:** write an optional note, choose a need, and keep up to five notes in this browser. Notes are not sent to an account or server. Remove one note or clear all notes at any time. If browser storage is unavailable, a note is held only for the current visit.

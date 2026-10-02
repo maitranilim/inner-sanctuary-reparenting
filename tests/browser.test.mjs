@@ -274,3 +274,32 @@ test('storage denial does not prevent the site or temporary check-ins from worki
   await context.close();
 });
 
+
+test('campfire mode draws fireflies only with full motion and clears when switched off', async () => {
+  const context = await browser.newContext({ reducedMotion: 'no-preference', viewport: { width: 1000, height: 700 } });
+  await context.addInitScript(() => localStorage.setItem('inner-sanctuary-settings', JSON.stringify({ campfire: true })));
+  await context.route('**/*', (route) => route.request().url().startsWith(base) ? route.continue() : route.abort());
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(base);
+  const lit = () => page.locator('.campfire-canvas').evaluate((canvas) => {
+    const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    let count = 0;
+    for (let index = 3; index < data.length; index += 4) if (data[index] > 8) count += 1;
+    return count;
+  });
+  await page.waitForTimeout(1200);
+  assert.ok(await lit() > 0);
+  assert.equal(await page.locator('.campfire-canvas').evaluate((node) => getComputedStyle(node).pointerEvents), 'none');
+  await page.locator('#menu-toggle').click();
+  await page.locator('#set-static').check();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator('.campfire-canvas').isVisible(), false);
+  await page.locator('#set-static').uncheck();
+  await page.locator('#set-campfire').uncheck();
+  await page.waitForTimeout(400);
+  assert.equal(await lit(), 0);
+  assert.deepEqual(errors, []);
+  await context.close();
+});

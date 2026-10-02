@@ -11,6 +11,7 @@ import {
 import { getMoodSuggestion, initBreathing } from './breathing.mjs';
 import { initGames } from './games.mjs';
 import { initAmbient } from './ambient.mjs';
+import { initCampfire } from './campfire.mjs';
 import { createSettings, getMotion } from './settings.mjs';
 import { configureHaptics, initWelcomeHaptic, play as haptic } from './haptics.mjs';
 import { setSoundEnabled } from './sound.mjs';
@@ -293,6 +294,7 @@ renderHistory();
 const breathing = initBreathing({ settings });
 initGames({ saved });
 initAmbient();
+initCampfire();
 initSavedDrawer({ store: saved, getNotes: () => history, onOpen: () => closeMenu() });
 
 const moodButtons = [...document.querySelectorAll('[data-mood]')];

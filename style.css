@@ -390,6 +390,9 @@ body.dark-mode .mood-chips button[aria-pressed="true"], body.dark-mode .game-tab
 .saved-empty { padding: 4px 0; color: var(--muted); font-size: var(--text-sm); }
 .drawer-foot { padding: 14px 24px; border-top: 1px solid var(--line); }
 body.drawer-open { overflow: hidden; }
+.campfire-canvas { position: fixed; inset: 0; z-index: 22; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 1.6s ease; }
+html[data-campfire="on"] .campfire-canvas { opacity: 1; }
+html[data-motion="reduced"] .campfire-canvas, html[data-motion="static"] .campfire-canvas { display: none; }
 .eyecare-overlay { position: fixed; inset: 0; z-index: 100; background: rgb(255 140 40); mix-blend-mode: multiply; opacity: 0; pointer-events: none; transition: opacity .6s ease; }
 html[data-eyecare="on"] .eyecare-overlay { opacity: var(--warm, .2); }
 

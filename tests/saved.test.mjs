@@ -5,6 +5,7 @@ import { DEFAULT_SETTINGS, normalizeSettings, resolveMotion, warmthToOpacity } f
 import { PATTERNS, breathPattern, configureHaptics, play, playBreath } from '../haptics.mjs';
 import { PAD_CHORDS, PENTATONIC, noteForIndex, padChord } from '../sound.mjs';
 import { easeToward } from '../ambient.mjs';
+import { FIREFLY_COLORS, createFirefly, createSpark, fireflyCount, fireflyGlow, sparkAlpha, sparkColor, stepFirefly, stepSpark } from '../campfire.mjs';
 
 const feeling = { key: 'guilty', trigger: 'When a boundary brings guilt', wise: 'Setting a boundary can be an act of care.', action: 'Place a hand on your heart.' };
 
@@ -104,4 +105,44 @@ test('the orb eases slowly toward the cursor without overshooting', () => {
     settled = next;
   }
   assert.ok(settled > 99);
+});
+
+test('fireflies drift gently, wrap around the screen, and glow at moderate brightness', () => {
+  assert.equal(fireflyCount(100, 100), 10);
+  assert.equal(fireflyCount(5000, 5000), 26);
+  let seed = 0.3;
+  const random = () => { seed = (seed * 9301 + 49297) % 233280 / 233280; return seed; };
+  const firefly = createFirefly(random, 800, 600);
+  assert.ok(FIREFLY_COLORS.some((color) => color === firefly.color));
+  assert.ok(firefly.color[1] >= 238 || firefly.color[1] >= 255 - 20);
+  for (let frame = 0; frame < 60 * 120; frame += 1) {
+    stepFirefly(firefly, 1 / 60, 800, 600);
+    assert.ok(firefly.x >= -20.5 && firefly.x <= 820.5);
+    assert.ok(firefly.y >= -20.5 && firefly.y <= 620.5);
+  }
+  for (let phase = 0; phase < 20; phase += 0.1) {
+    const glow = fireflyGlow(phase);
+    assert.ok(glow >= 0.1 && glow <= 0.56);
+  }
+});
+
+test('sparks are subtle, rise from the bottom, and shift from yellow to red', () => {
+  const spark = createSpark(() => 0.5, 1000, 800);
+  assert.ok(spark.y > 800);
+  assert.ok(spark.vy < 0);
+  let alive = true;
+  let frames = 0;
+  while (alive && frames < 60 * 10) {
+    alive = stepSpark(spark, 1 / 60);
+    frames += 1;
+  }
+  assert.equal(alive, false);
+  assert.ok(frames / 60 < 5);
+  const early = sparkColor(0);
+  const late = sparkColor(1);
+  assert.equal(early[0], 255);
+  assert.ok(early[1] > late[1]);
+  assert.ok(late[1] > 80);
+  for (let t = 0; t <= 1; t += 0.05) assert.ok(sparkAlpha(t) <= 0.5);
+  assert.equal(sparkAlpha(1), 0);
 });
